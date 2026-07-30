@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 
+import ResumeUpload from './_components/ResumeUpload';
+
 interface BulletPoint {
   id?: number;
   text: string;
@@ -21,36 +23,32 @@ export default function VaultPage() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [error, setError] = useState('');
 
   // Form State
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
   const [dates, setDates] = useState('');
   const [category, setCategory] = useState('Work');
   const [bullets, setBullets] = useState<BulletPoint[]>([{ text: '', skills: '' }]);
 
-  const fetchExperiences = async () => {
-    try {
-      const res = await fetch('http://localhost:8000/api/experiences');
-      if (res.ok) {
-        const data = await res.json();
-        setExperiences(data);
-      }
-    } catch (error) {
-      console.error('Failed to load experiences:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Promise callbacks rather than await: state must not be set synchronously
+  // inside the mount effect below (react-hooks/set-state-in-effect).
+  const fetchExperiences = () =>
+    fetch('http://localhost:8000/api/experiences')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+      .then((data: Experience[]) => setExperiences(data))
+      .catch((err) => console.error('Failed to load experiences:', err))
+      .finally(() => setLoading(false));
 
   useEffect(() => {
     fetchExperiences();
   }, []);
 
   const handleBulletChange = (index: number, field: 'text' | 'skills', value: string) => {
-    const updatedBullets = [...bullets];
-    updatedBullets[index][field] = value;
-    setBullets(updatedBullets);
+    setBullets(bullets.map((b, i) => (i === index ? { ...b, [field]: value } : b)));
   };
 
   const addBulletField = () => {
@@ -59,6 +57,64 @@ export default function VaultPage() {
 
   const removeBulletField = (index: number) => {
     setBullets(bullets.filter((_, i) => i !== index));
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setCompany('');
+    setRole('');
+    setDates('');
+    setCategory('Work');
+    setBullets([{ text: '', skills: '' }]);
+  };
+
+  const closeForm = () => {
+    resetForm();
+    setShowForm(false);
+    setError('');
+  };
+
+  const startEdit = (exp: Experience) => {
+    setEditingId(exp.id ?? null);
+    setCompany(exp.company);
+    setRole(exp.role);
+    setDates(exp.dates);
+    setCategory(exp.category);
+    // The form always needs at least one bullet row to render.
+    setBullets(
+      exp.bullets.length > 0
+        ? exp.bullets.map((b) => ({ text: b.text, skills: b.skills }))
+        : [{ text: '', skills: '' }]
+    );
+    setShowForm(true);
+    setError('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = async (exp: Experience) => {
+    if (exp.id === undefined) return;
+    const confirmed = window.confirm(
+      `Delete "${exp.role} at ${exp.company}" and its ${exp.bullets.length} bullet point(s)? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`http://localhost:8000/api/experiences/${exp.id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        // If the entry being edited is the one deleted, drop the stale form.
+        if (editingId === exp.id) closeForm();
+        setError('');
+        fetchExperiences();
+      } else {
+        setError(`Could not delete that experience (server said ${res.status}).`);
+      }
+    } catch (err) {
+      console.error('Failed to delete experience:', err);
+      setError('Could not reach the backend to delete that experience.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,24 +127,28 @@ export default function VaultPage() {
       bullets: bullets.filter((b) => b.text.trim() !== ''),
     };
 
+    const url = editingId
+      ? `http://localhost:8000/api/experiences/${editingId}`
+      : 'http://localhost:8000/api/experiences';
+
     try {
-      const res = await fetch('http://localhost:8000/api/experiences', {
-        method: 'POST',
+      const res = await fetch(url, {
+        method: editingId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        setCompany('');
-        setRole('');
-        setDates('');
-        setCategory('Work');
-        setBullets([{ text: '', skills: '' }]);
-        setShowForm(false);
+        closeForm();
         fetchExperiences();
+      } else {
+        setError(
+          `Could not save that experience (server said ${res.status}).`
+        );
       }
-    } catch (error) {
-      console.error('Failed to save experience:', error);
+    } catch (err) {
+      console.error('Failed to save experience:', err);
+      setError('Could not reach the backend to save that experience.');
     }
   };
 
@@ -102,19 +162,45 @@ export default function VaultPage() {
             Store and manage all your raw roles, projects, and bullet points in one central database.
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
-        >
-          {showForm ? 'Cancel' : '+ Add Experience'}
-        </button>
+        <div className="flex gap-3 shrink-0">
+          <button
+            onClick={() => setShowUpload(!showUpload)}
+            className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
+          >
+            {showUpload ? 'Hide Upload' : '⬆ Upload Resume'}
+          </button>
+          <button
+            onClick={() => (showForm ? closeForm() : setShowForm(true))}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+          >
+            {showForm ? 'Cancel' : '+ Add Experience'}
+          </button>
+        </div>
       </div>
 
-      {/* Add Experience Form */}
+      {error && (
+        <div className="border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* Bulk import from an existing resume file */}
+      {showUpload && (
+        <ResumeUpload
+          onImported={() => {
+            setShowUpload(false);
+            fetchExperiences();
+          }}
+        />
+      )}
+
+      {/* Add / Edit Experience Form */}
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-slate-50 border p-6 rounded-xl space-y-6 shadow-xs">
-          <h2 className="text-xl font-semibold text-gray-800">New Experience Entry</h2>
-          
+          <h2 className="text-xl font-semibold text-gray-800">
+            {editingId ? 'Edit Experience Entry' : 'New Experience Entry'}
+          </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Company / Organization</label>
@@ -207,12 +293,23 @@ export default function VaultPage() {
             ))}
           </div>
 
-          <button
-            type="submit"
-            className="w-full py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition"
-          >
-            Save Experience to Vault
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              className="flex-1 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition"
+            >
+              {editingId ? 'Update Experience' : 'Save Experience to Vault'}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={closeForm}
+                className="px-6 py-2.5 border border-gray-300 bg-white text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
       )}
 
@@ -223,12 +320,26 @@ export default function VaultPage() {
         ) : experiences.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed rounded-xl bg-slate-50">
             <p className="text-gray-600 font-medium">Your Master Vault is empty.</p>
-            <p className="text-xs text-gray-400 mt-1">Click "+ Add Experience" above to store your first entry.</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Add an entry by hand, or{' '}
+              <button
+                onClick={() => setShowUpload(true)}
+                className="text-blue-600 font-semibold hover:underline"
+              >
+                upload an existing resume
+              </button>{' '}
+              to fill it in one go.
+            </p>
           </div>
         ) : (
           experiences.map((exp) => (
-            <div key={exp.id} className="border rounded-xl p-6 bg-white shadow-2xs space-y-4">
-              <div className="flex justify-between items-start">
+            <div
+              key={exp.id}
+              className={`border rounded-xl p-6 bg-white shadow-2xs space-y-4 ${
+                editingId === exp.id ? 'ring-2 ring-blue-400 border-blue-300' : ''
+              }`}
+            >
+              <div className="flex justify-between items-start gap-4">
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-bold text-gray-900">{exp.role}</h3>
@@ -238,7 +349,23 @@ export default function VaultPage() {
                   </div>
                   <p className="text-sm font-medium text-gray-600 mt-0.5">{exp.company}</p>
                 </div>
-                <span className="text-xs font-mono text-gray-400">{exp.dates}</span>
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  <span className="text-xs font-mono text-gray-400">{exp.dates}</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => startEdit(exp)}
+                      className="text-xs font-semibold px-2.5 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(exp)}
+                      className="text-xs font-semibold px-2.5 py-1 rounded-md border border-red-200 text-red-600 hover:bg-red-50 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <ul className="list-disc pl-5 space-y-2 text-sm text-gray-800">

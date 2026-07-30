@@ -1,0 +1,22 @@
+# Pinned to the versions currently running under /opt/anaconda3.
+# Install with:  python -m pip install -r requirements.txt
+
+# --- API + data layer ---
+fastapi==0.140.7
+uvicorn==0.51.0
+sqlalchemy==2.0.39
+pydantic==2.13.4
+python-dotenv==1.1.0
+openai==2.49.0
+
+# --- Resume upload + parsing ---
+# python-multipart is required by FastAPI to accept file uploads at all;
+# without it, any UploadFile endpoint fails at import time.
+python-multipart==0.0.20
+pypdf==6.1.1          # PDF text extraction
+python-docx==1.1.2    # .docx text extraction
+# LaTeX (.tex) needs no library — it is parsed with the stdlib.
+
+# --- Tests ---
+pytest==8.3.4
+httpx==0.28.1
