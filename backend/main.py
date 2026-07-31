@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Depends, File, HTTPException, UploadFile, status
+from datetime import datetime, timezone
+
+from fastapi import FastAPI, Depends, File, HTTPException, Response, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
@@ -6,7 +8,10 @@ from dotenv import load_dotenv
 
 from database import engine, Base, get_db
 import models, schemas
+from services import latex_compiler
 from services.ai_tailor import tailor_resume_bullets
+from services.latex_builder import build_resume
+from services.latex_tailor import tailor_latex
 from services.resume_extractor import extract_experiences
 from services.resume_parser import SUPPORTED_EXTENSIONS, ResumeParseError, extract_text
 
@@ -206,6 +211,212 @@ async def upload_resume(file: UploadFile = File(...)):
 def supported_resume_types():
     """Lets the frontend build its file picker from one source of truth."""
     return {"extensions": list(SUPPORTED_EXTENSIONS)}
+
+
+# -------------------------------------------------------------------
+# LaTeX Resume Sources
+# -------------------------------------------------------------------
+
+def _get_source(source_id: int, db: Session) -> models.ResumeSource:
+    source = (
+        db.query(models.ResumeSource)
+        .filter(models.ResumeSource.id == source_id)
+        .first()
+    )
+    if source is None:
+        raise HTTPException(status_code=404, detail=f"Resume source {source_id} not found")
+    return source
+
+
+def _save_source(name: str, latex: str, db: Session) -> models.ResumeSource:
+    source = models.ResumeSource(name=name, latex=latex)
+    db.add(source)
+    db.commit()
+    db.refresh(source)
+    return source
+
+
+@app.get("/api/resume/sources", response_model=List[schemas.ResumeSourceSummary])
+def list_resume_sources(db: Session = Depends(get_db)):
+    """Base resumes available to tailor from, newest first."""
+    return (
+        db.query(models.ResumeSource)
+        .order_by(models.ResumeSource.created_at.desc(), models.ResumeSource.id.desc())
+        .all()
+    )
+
+
+@app.get("/api/resume/sources/{source_id}", response_model=schemas.ResumeSourceResponse)
+def get_resume_source(source_id: int, db: Session = Depends(get_db)):
+    return _get_source(source_id, db)
+
+
+@app.post(
+    "/api/resume/sources",
+    response_model=schemas.ResumeSourceResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_resume_source(
+    payload: schemas.ResumeSourceCreate, db: Session = Depends(get_db)
+):
+    """Store LaTeX pasted or edited in the browser as a reusable base."""
+    if not payload.latex.strip():
+        raise HTTPException(status_code=400, detail="That LaTeX source is empty.")
+    return _save_source(payload.name or "Untitled resume", payload.latex, db)
+
+
+@app.post(
+    "/api/resume/sources/upload",
+    response_model=schemas.ResumeSourceResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_resume_source(
+    file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    """
+    Store an uploaded .tex verbatim.
+
+    Unlike /api/resume/upload, which reduces a resume to text to mine it for
+    Vault entries, this keeps the source byte-for-byte — tailoring has to splice
+    rewrites back into the user's own template.
+    """
+    data = await _read_upload(file)
+    if not data:
+        raise HTTPException(status_code=400, detail="That file is empty.")
+
+    filename = file.filename or "resume.tex"
+    if not filename.lower().endswith(".tex"):
+        raise HTTPException(
+            status_code=400,
+            detail="Tailoring needs LaTeX source. Upload a .tex file.",
+        )
+
+    try:
+        latex = data.decode("utf-8")
+    except UnicodeDecodeError:
+        latex = data.decode("latin-1")
+
+    if not latex.strip():
+        raise HTTPException(status_code=400, detail="That .tex file has no content.")
+
+    return _save_source(filename, latex, db)
+
+
+@app.delete(
+    "/api/resume/sources/{source_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_resume_source(source_id: int, db: Session = Depends(get_db)):
+    db.delete(_get_source(source_id, db))
+    db.commit()
+
+
+@app.post("/api/resume/generate", response_model=schemas.ResumeSourceResponse)
+def generate_resume(
+    payload: schemas.GenerateResumeRequest, db: Session = Depends(get_db)
+):
+    """Build a .tex from the Master Vault for someone with no resume yet."""
+    experiences = db.query(models.Experience).all()
+    if not experiences:
+        raise HTTPException(
+            status_code=400,
+            detail="No experiences found in Master Vault. Add experiences first.",
+        )
+
+    latex = build_resume(
+        payload.profile,
+        [
+            {
+                "company": exp.company,
+                "role": exp.role,
+                "dates": exp.dates,
+                "category": exp.category,
+                "bullets": [{"text": b.text, "skills": b.skills} for b in exp.bullets],
+            }
+            for exp in experiences
+        ],
+    )
+
+    if payload.save_as:
+        return _save_source(payload.save_as, latex, db)
+
+    # Unsaved drafts still need the response shape; id 0 marks "not stored".
+    return schemas.ResumeSourceResponse(
+        id=0,
+        name="Generated from Vault",
+        latex=latex,
+        created_at=datetime.now(timezone.utc),
+    )
+
+
+# -------------------------------------------------------------------
+# LaTeX Tailoring and Compilation
+# -------------------------------------------------------------------
+
+@app.post("/api/resume/tailor-latex", response_model=schemas.LatexTailorResponse)
+def tailor_resume_latex(
+    payload: schemas.LatexTailorRequest, db: Session = Depends(get_db)
+):
+    """
+    Rewrite a resume's bullet points for a job description.
+
+    Only bullet text changes; the template, header, and education sections are
+    returned byte-identical, which is what keeps the diff reviewable and the
+    document compilable.
+    """
+    if not payload.job_description.strip():
+        raise HTTPException(status_code=400, detail="A job description is required.")
+
+    if payload.source_id is not None:
+        latex = _get_source(payload.source_id, db).latex
+    elif payload.latex and payload.latex.strip():
+        latex = payload.latex
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Provide either source_id or latex to tailor.",
+        )
+
+    try:
+        result = tailor_latex(latex, payload.job_description)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Tailoring failed: {exc}") from exc
+
+    return schemas.LatexTailorResponse(**result.model_dump())
+
+
+@app.get("/api/resume/compiler")
+def compiler_status():
+    """Lets the UI hide PDF preview when no LaTeX engine is installed."""
+    return {
+        "available": latex_compiler.is_available(),
+        "engine": latex_compiler.engine_path(),
+        "hint": None if latex_compiler.is_available() else latex_compiler.INSTALL_HINT,
+    }
+
+
+@app.post("/api/resume/compile")
+def compile_resume(payload: schemas.CompileRequest):
+    """Render LaTeX to a PDF for preview and download."""
+    if not payload.latex.strip():
+        raise HTTPException(status_code=400, detail="There is no LaTeX to compile.")
+
+    if not latex_compiler.is_available():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=latex_compiler.INSTALL_HINT,
+        )
+
+    try:
+        pdf = latex_compiler.compile_pdf(payload.latex)
+    except latex_compiler.LatexCompileError as exc:
+        # 422: the request was well-formed, the document itself is the problem.
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'inline; filename="resume.pdf"'},
+    )
 
 
 # -------------------------------------------------------------------

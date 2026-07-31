@@ -1,5 +1,6 @@
 'use client';
-
+import { ExperienceCard } from '@/components/ExperienceCard';
+import { Plus, Database, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import ResumeUpload from './_components/ResumeUpload';
@@ -157,7 +158,10 @@ export default function VaultPage() {
       {/* Header */}
       <div className="flex justify-between items-center border-b pb-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Master Experience Vault</h1>
+          <h1 className="flex items-center gap-2 text-3xl font-bold text-gray-900">
+            <Database className="w-7 h-7 text-blue-600" />
+            Master Experience Vault
+          </h1>
           <p className="text-sm text-gray-500 mt-1">
             Store and manage all your raw roles, projects, and bullet points in one central database.
           </p>
@@ -165,15 +169,17 @@ export default function VaultPage() {
         <div className="flex gap-3 shrink-0">
           <button
             onClick={() => setShowUpload(!showUpload)}
-            className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
+            className="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
           >
-            {showUpload ? 'Hide Upload' : '⬆ Upload Resume'}
+            <Sparkles className="w-4 h-4 text-blue-600" />
+            {showUpload ? 'Hide Upload' : 'Upload Resume'}
           </button>
           <button
             onClick={() => (showForm ? closeForm() : setShowForm(true))}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
           >
-            {showForm ? 'Cancel' : '+ Add Experience'}
+            <Plus className="w-4 h-4" />
+            {showForm ? 'Cancel' : 'Add Experience'}
           </button>
         </div>
       </div>
@@ -314,14 +320,14 @@ export default function VaultPage() {
       )}
 
       {/* Experience Display List */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {loading ? (
-          <p className="text-gray-500">Loading Master Vault...</p>
+          <p className="text-slate-500 text-sm">Loading Master Vault...</p>
         ) : experiences.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed rounded-xl bg-slate-50">
-            <p className="text-gray-600 font-medium">Your Master Vault is empty.</p>
-            <p className="text-xs text-gray-400 mt-1">
-              Add an entry by hand, or{' '}
+          <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 space-y-2">
+            <p className="text-slate-700 font-medium">Your Master Vault is empty.</p>
+            <p className="text-xs text-slate-400">
+              Click &quot;+ Add Experience&quot; above to store your first entry, or{' '}
               <button
                 onClick={() => setShowUpload(true)}
                 className="text-blue-600 font-semibold hover:underline"
@@ -332,59 +338,15 @@ export default function VaultPage() {
             </p>
           </div>
         ) : (
-          experiences.map((exp) => (
-            <div
-              key={exp.id}
-              className={`border rounded-xl p-6 bg-white shadow-2xs space-y-4 ${
-                editingId === exp.id ? 'ring-2 ring-blue-400 border-blue-300' : ''
-              }`}
-            >
-              <div className="flex justify-between items-start gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-gray-900">{exp.role}</h3>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium">
-                      {exp.category}
-                    </span>
-                  </div>
-                  <p className="text-sm font-medium text-gray-600 mt-0.5">{exp.company}</p>
-                </div>
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  <span className="text-xs font-mono text-gray-400">{exp.dates}</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => startEdit(exp)}
-                      className="text-xs font-semibold px-2.5 py-1 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(exp)}
-                      className="text-xs font-semibold px-2.5 py-1 rounded-md border border-red-200 text-red-600 hover:bg-red-50 transition"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <ul className="list-disc pl-5 space-y-2 text-sm text-gray-800">
-                {exp.bullets.map((b) => (
-                  <li key={b.id}>
-                    <span>{b.text}</span>
-                    {b.skills && (
-                      <div className="mt-1 flex gap-1 flex-wrap">
-                        {b.skills.split(',').map((skill, idx) => (
-                          <span key={idx} className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded">
-                            {skill.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          experiences.map((exp, index) => (
+            <ExperienceCard
+              key={exp.id || index}
+              experience={exp}
+              index={index}
+              isEditing={editingId === exp.id}
+              onEdit={() => startEdit(exp)}
+              onDelete={() => handleDelete(exp)}
+            />
           ))
         )}
       </div>

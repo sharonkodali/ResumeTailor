@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from datetime import datetime, timezone
+
+from sqlalchemy import Column, DateTime, Integer, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -22,3 +24,20 @@ class BulletPoint(Base):
     skills = Column(String)  # Comma-separated tags e.g. "Python, SQL, FastApi"
 
     experience = relationship("Experience", back_populates="bullets")
+
+
+class ResumeSource(Base):
+    """
+    A base LaTeX resume to tailor from — either an uploaded .tex or one built
+    from the Vault. The source is stored verbatim so tailoring can splice
+    rewritten bullets back into the user's own template.
+    """
+
+    __tablename__ = "resume_sources"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    latex = Column(Text, nullable=False)
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
