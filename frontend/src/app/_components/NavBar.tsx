@@ -28,11 +28,6 @@ export default function NavBar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // A route change should never leave the mobile sheet hanging open.
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
-
   return (
     <header
       className={`sticky top-0 z-50 transition-colors duration-300 ${
@@ -120,6 +115,9 @@ export default function NavBar() {
                   <Link
                     key={href}
                     href={href}
+                    // Closed here rather than in an effect on `pathname`: the
+                    // click is the event, and setState-in-effect cascades.
+                    onClick={() => setMenuOpen(false)}
                     aria-current={active ? 'page' : undefined}
                     className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                       active
