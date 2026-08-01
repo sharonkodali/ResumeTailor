@@ -1,5 +1,7 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
+import { FileText, Loader2, UploadCloud } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 const API = 'http://localhost:8000';
@@ -157,10 +159,15 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
     }
   };
 
+  const draftInput =
+    'rounded-lg border border-brown-200 bg-white px-2.5 py-2 text-sm text-brown-950 transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200';
+
   return (
     <div className="space-y-4">
       {/* Dropzone */}
-      <div
+      <motion.div
+        animate={{ scale: dragging ? 1.01 : 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
         onDragOver={(e) => {
           e.preventDefault();
           setDragging(true);
@@ -172,8 +179,10 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
           const file = e.dataTransfer.files?.[0];
           if (file) handleFile(file);
         }}
-        className={`border-2 border-dashed rounded-xl px-6 py-8 text-center transition ${
-          dragging ? 'border-blue-400 bg-blue-50' : 'border-gray-300 bg-slate-50'
+        className={`rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors duration-200 ${
+          dragging
+            ? 'border-blue-400 bg-blue-50'
+            : 'border-brown-200 bg-brown-50/60 hover:border-brown-300'
         }`}
       >
         <input
@@ -187,166 +196,239 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
           }}
         />
 
-        <p className="text-sm font-medium text-gray-700">
-          {parsing ? 'Reading your resume...' : 'Import from an existing resume'}
+        <motion.span
+          animate={
+            parsing
+              ? { y: 0 }
+              : dragging
+                ? { y: -6, scale: 1.1 }
+                : { y: [0, -4, 0] }
+          }
+          transition={
+            parsing || dragging
+              ? { type: 'spring', stiffness: 300, damping: 18 }
+              : { duration: 3.5, repeat: Infinity, ease: 'easeInOut' }
+          }
+          className={`mx-auto grid h-12 w-12 place-items-center rounded-xl shadow-card ${
+            dragging
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-brown-700'
+          }`}
+        >
+          {parsing ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <UploadCloud className="h-5 w-5" />
+          )}
+        </motion.span>
+
+        <p className="mt-4 font-display text-base font-semibold text-brown-900">
+          {parsing
+            ? 'Reading your resume...'
+            : dragging
+              ? 'Drop it here'
+              : 'Import from an existing resume'}
         </p>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="mt-1 text-xs text-stone-500">
           Drop a PDF, .docx, or LaTeX (.tex) file here — or
         </p>
+
         <button
           type="button"
           disabled={parsing}
           onClick={() => fileInput.current?.click()}
-          className={`mt-3 px-4 py-2 text-sm font-medium rounded-lg transition ${
+          className={`mt-4 rounded-lg px-4 py-2 text-sm font-semibold shadow-card transition-all duration-200 ${
             parsing
-              ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-              : 'bg-gray-900 text-white hover:bg-gray-700'
+              ? 'cursor-not-allowed bg-stone-200 text-stone-500'
+              : 'bg-brown-700 text-brown-50 hover:-translate-y-0.5 hover:bg-brown-800 hover:shadow-lift'
           }`}
         >
           {parsing ? 'Parsing...' : 'Choose a file'}
         </button>
-      </div>
 
-      {error && (
-        <div className="border border-red-200 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg">
-          {error}
+        <div className="mt-4 flex items-center justify-center gap-1.5">
+          {['.pdf', '.docx', '.tex'].map((ext) => (
+            <span
+              key={ext}
+              className="rounded-md border border-brown-200 bg-white px-2 py-0.5 font-mono text-[10px] text-brown-700"
+            >
+              {ext}
+            </span>
+          ))}
         </div>
-      )}
+      </motion.div>
+
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {error}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Review panel — nothing is saved until the user confirms */}
-      {drafts && (
-        <div className="border rounded-xl bg-white p-6 space-y-5 shadow-2xs">
-          <div className="flex justify-between items-start gap-4 border-b pb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Review what we found in {filename}
-              </h2>
-              <p className="text-xs text-gray-500 mt-1">
-                {drafts.length} experience{drafts.length === 1 ? '' : 's'} detected.
-                Uncheck anything you do not want, then import. Nothing is saved until you do.
-              </p>
+      <AnimatePresence>
+        {drafts && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-5 rounded-2xl border border-brown-200/70 bg-white p-6 shadow-card"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-brown-100 pb-4">
+              <div>
+                <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-brown-950">
+                  <FileText className="h-4.5 w-4.5 text-blue-600" />
+                  Review what we found in {filename}
+                </h2>
+                <p className="mt-1 text-xs text-stone-500">
+                  {drafts.length} experience{drafts.length === 1 ? '' : 's'}{' '}
+                  detected. Uncheck anything you do not want, then import.
+                  Nothing is saved until you do.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={discard}
+                className="shrink-0 text-xs font-semibold text-stone-500 transition hover:text-brown-900"
+              >
+                Discard
+              </button>
             </div>
+
+            {!aiStructured && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+                The AI structuring step was unavailable, so this resume was split
+                up heuristically. Check the company, role, and dates on each
+                entry before importing.
+              </div>
+            )}
+
+            {drafts.map((draft, i) => (
+              <motion.div
+                key={i}
+                layout
+                className={`space-y-3 rounded-xl border p-4 transition-colors duration-200 ${
+                  draft.selected
+                    ? 'border-brown-200/70 bg-white'
+                    : 'border-stone-200 bg-stone-50 opacity-60'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={draft.selected}
+                    onChange={() => updateDraft(i, { selected: !draft.selected })}
+                    className="mt-2.5 h-4 w-4 shrink-0 accent-blue-600"
+                  />
+                  <div className="grid flex-1 grid-cols-1 gap-2 md:grid-cols-4">
+                    <input
+                      value={draft.company}
+                      onChange={(e) => updateDraft(i, { company: e.target.value })}
+                      placeholder="Company"
+                      className={`${draftInput} font-semibold`}
+                    />
+                    <input
+                      value={draft.role}
+                      onChange={(e) => updateDraft(i, { role: e.target.value })}
+                      placeholder="Role"
+                      className={draftInput}
+                    />
+                    <input
+                      value={draft.dates}
+                      onChange={(e) => updateDraft(i, { dates: e.target.value })}
+                      placeholder="Dates"
+                      className={draftInput}
+                    />
+                    <select
+                      value={draft.category}
+                      onChange={(e) => updateDraft(i, { category: e.target.value })}
+                      className={draftInput}
+                    >
+                      {CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <ul className="space-y-2 pl-7">
+                  {draft.bullets.map((bullet, j) => (
+                    <li key={j} className="flex items-start gap-2">
+                      <input
+                        type="checkbox"
+                        checked={bullet.selected}
+                        disabled={!draft.selected}
+                        onChange={() => toggleBullet(i, j)}
+                        className="mt-1 h-3.5 w-3.5 shrink-0 accent-blue-600"
+                      />
+                      <div className="flex-1">
+                        <p
+                          className={`text-sm transition-colors ${
+                            bullet.selected
+                              ? 'text-stone-700'
+                              : 'text-stone-400 line-through'
+                          }`}
+                        >
+                          {bullet.text}
+                        </p>
+                        {bullet.skills && (
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {bullet.skills.split(',').map((skill, k) => (
+                              <span
+                                key={k}
+                                className="rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 font-mono text-[10px] text-blue-700"
+                              >
+                                {skill.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                  {draft.bullets.length === 0 && (
+                    <li className="text-xs italic text-stone-400">
+                      No bullet points found for this entry — you can add them
+                      after importing.
+                    </li>
+                  )}
+                </ul>
+              </motion.div>
+            ))}
+
             <button
               type="button"
-              onClick={discard}
-              className="text-xs font-semibold text-gray-500 hover:text-gray-800 shrink-0"
-            >
-              Discard
-            </button>
-          </div>
-
-          {!aiStructured && (
-            <div className="border border-amber-200 bg-amber-50 text-amber-800 text-xs px-4 py-3 rounded-lg">
-              The AI structuring step was unavailable, so this resume was split up
-              heuristically. Check the company, role, and dates on each entry before importing.
-            </div>
-          )}
-
-          {drafts.map((draft, i) => (
-            <div
-              key={i}
-              className={`border rounded-lg p-4 space-y-3 transition ${
-                draft.selected ? 'bg-white' : 'bg-slate-50 opacity-60'
+              onClick={handleImport}
+              disabled={importing || selectedCount === 0}
+              className={`w-full rounded-lg py-2.5 text-sm font-semibold shadow-card transition-all duration-200 ${
+                importing || selectedCount === 0
+                  ? 'cursor-not-allowed bg-stone-200 text-stone-500'
+                  : 'bg-blue-700 text-white hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-lift'
               }`}
             >
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={draft.selected}
-                  onChange={() => updateDraft(i, { selected: !draft.selected })}
-                  className="mt-2.5 h-4 w-4 shrink-0"
-                />
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-1">
-                  <input
-                    value={draft.company}
-                    onChange={(e) => updateDraft(i, { company: e.target.value })}
-                    placeholder="Company"
-                    className="p-2 border rounded-md text-sm font-semibold text-gray-900 md:col-span-1"
-                  />
-                  <input
-                    value={draft.role}
-                    onChange={(e) => updateDraft(i, { role: e.target.value })}
-                    placeholder="Role"
-                    className="p-2 border rounded-md text-sm text-gray-900"
-                  />
-                  <input
-                    value={draft.dates}
-                    onChange={(e) => updateDraft(i, { dates: e.target.value })}
-                    placeholder="Dates"
-                    className="p-2 border rounded-md text-sm text-gray-700"
-                  />
-                  <select
-                    value={draft.category}
-                    onChange={(e) => updateDraft(i, { category: e.target.value })}
-                    className="p-2 border rounded-md text-sm bg-white text-gray-900"
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <ul className="space-y-2 pl-7">
-                {draft.bullets.map((bullet, j) => (
-                  <li key={j} className="flex items-start gap-2">
-                    <input
-                      type="checkbox"
-                      checked={bullet.selected}
-                      disabled={!draft.selected}
-                      onChange={() => toggleBullet(i, j)}
-                      className="mt-1 h-3.5 w-3.5 shrink-0"
-                    />
-                    <div className="flex-1">
-                      <p
-                        className={`text-sm ${
-                          bullet.selected ? 'text-gray-800' : 'text-gray-400 line-through'
-                        }`}
-                      >
-                        {bullet.text}
-                      </p>
-                      {bullet.skills && (
-                        <div className="mt-1 flex gap-1 flex-wrap">
-                          {bullet.skills.split(',').map((skill, k) => (
-                            <span
-                              key={k}
-                              className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded"
-                            >
-                              {skill.trim()}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </li>
-                ))}
-                {draft.bullets.length === 0 && (
-                  <li className="text-xs text-gray-400 italic">
-                    No bullet points found for this entry — you can add them after importing.
-                  </li>
-                )}
-              </ul>
-            </div>
-          ))}
-
-          <button
-            type="button"
-            onClick={handleImport}
-            disabled={importing || selectedCount === 0}
-            className={`w-full py-2.5 font-medium rounded-lg transition ${
-              importing || selectedCount === 0
-                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700'
-            }`}
-          >
-            {importing
-              ? 'Importing...'
-              : `Import ${selectedCount} experience${selectedCount === 1 ? '' : 's'} to Vault`}
-          </button>
-        </div>
-      )}
+              {importing ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Importing...
+                </span>
+              ) : (
+                `Import ${selectedCount} experience${selectedCount === 1 ? '' : 's'} to Vault`
+              )}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
