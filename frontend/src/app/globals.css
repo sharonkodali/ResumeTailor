@@ -1,4 +1,198 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+/*
+ * ResumeTailor design tokens.
+ *
+ * Tailwind v4 is configured here in CSS rather than in tailwind.config.ts —
+ * with a bare `@import "tailwindcss"` the JS config is not loaded at all.
+ *
+ * The scheme is brown + blue, split along what the app actually does:
+ *   brown  — the Vault. Warm, archival, "your material on paper."
+ *   blue   — the Tailor. Cool, analytical, "what the AI did to it."
+ * Neutrals are Tailwind's built-in `stone`, which is warm-tinted and sits
+ * against brown without the blue-grey clash you get from `slate`/`gray`.
+ */
+@theme {
+  /* Brown — warm umber. 600 is the primary; white text on it clears AA. */
+  --color-brown-50: #fbf7f3;
+  --color-brown-100: #f4ebe1;
+  --color-brown-200: #e8d6c3;
+  --color-brown-300: #d6b99b;
+  --color-brown-400: #c0976f;
+  --color-brown-500: #a87b52;
+  --color-brown-600: #8d6240;
+  --color-brown-700: #714e34;
+  --color-brown-800: #5a3f2c;
+  --color-brown-900: #493426;
+  --color-brown-950: #2a1d15;
+
+  /* Blue — denim/steel. Deliberately overrides Tailwind's default blue so
+     any stray `text-blue-600` still lands on-palette. */
+  --color-blue-50: #f1f5fa;
+  --color-blue-100: #e0eaf6;
+  --color-blue-200: #c4d8ee;
+  --color-blue-300: #9bbce0;
+  --color-blue-400: #6b99cd;
+  --color-blue-500: #4577b4;
+  --color-blue-600: #345e97;
+  --color-blue-700: #2b4c7a;
+  --color-blue-800: #274063;
+  --color-blue-900: #243851;
+  --color-blue-950: #172436;
+
+  /* Page surfaces */
+  --color-canvas: #fdfaf6;
+  --color-ink: #2a1d15;
+
+  --font-display: var(--font-lora), Georgia, "Times New Roman", serif;
+
+  --shadow-card: 0 1px 2px rgb(42 29 21 / 0.04), 0 1px 3px rgb(42 29 21 / 0.06);
+  --shadow-lift: 0 12px 28px -10px rgb(42 29 21 / 0.18), 0 4px 10px -4px rgb(42 29 21 / 0.1);
+  --shadow-ring: 0 0 0 1px rgb(141 98 64 / 0.12);
+
+  --animate-drift: drift 22s ease-in-out infinite;
+  --animate-drift-slow: drift 30s ease-in-out infinite reverse;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
+
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    33% {
+      transform: translate3d(4%, -6%, 0) scale(1.08);
+    }
+    66% {
+      transform: translate3d(-5%, 4%, 0) scale(0.95);
+    }
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes pulse-ring {
+    0% {
+      opacity: 0.5;
+      transform: scale(0.9);
+    }
+    70%,
+    100% {
+      opacity: 0;
+      transform: scale(1.6);
+    }
+  }
+}
+
+@layer base {
+  html {
+    /* The palette is light-only; stop browsers from inverting form controls. */
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+  }
+
+  ::selection {
+    background-color: var(--color-brown-200);
+    color: var(--color-brown-950);
+  }
+
+  /* One focus treatment everywhere, so keyboard users get the same affordance
+     on links, buttons, inputs and the custom controls alike. */
+  :focus-visible {
+    outline: 2px solid var(--color-blue-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  input,
+  textarea,
+  select {
+    background-color: white;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-stone-400);
+  }
+}
+
+@layer components {
+  /* Warm scrollbars inside scrollable panels (diff view, long lists). */
+  .scroll-warm {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brown-300) transparent;
+  }
+  .scroll-warm::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .scroll-warm::-webkit-scrollbar-thumb {
+    background-color: var(--color-brown-300);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  .scroll-warm::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-brown-400);
+  }
+}
+
+@utility text-gradient {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-brown-700) 0%,
+    var(--color-brown-500) 35%,
+    var(--color-blue-600) 100%
+  );
+  background-clip: text;
+  color: transparent;
+}
+
+/* Sweeping highlight used on skeletons while the AI request is in flight. */
+@utility shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-brown-100) 25%,
+    var(--color-brown-50) 37%,
+    var(--color-brown-100) 63%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Faint paper tooth over the hero, so the large warm areas are not flat. */
+@utility grain {
+  position: relative;
+}
+@utility grain-overlay {
+  background-image: radial-gradient(
+    var(--color-brown-300) 0.5px,
+    transparent 0.5px
+  );
+  background-size: 14px 14px;
+  opacity: 0.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
