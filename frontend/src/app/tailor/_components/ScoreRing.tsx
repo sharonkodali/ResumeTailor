@@ -8,9 +8,9 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 /** Plain-English reading of the score, so the number is not the only signal. */
 function band(score: number) {
-  if (score >= 75) return { label: 'Strong match', tone: 'text-blue-700' };
-  if (score >= 50) return { label: 'Partial match', tone: 'text-brown-700' };
-  return { label: 'Weak match', tone: 'text-brown-600' };
+  if (score >= 75) return { label: 'Strong match', tone: 'text-ash-50' };
+  if (score >= 50) return { label: 'Partial match', tone: 'text-ash-100' };
+  return { label: 'Weak match', tone: 'text-ash-200' };
 }
 
 export default function ScoreRing({ score }: { score: number }) {
@@ -33,8 +33,8 @@ export default function ScoreRing({ score }: { score: number }) {
         <svg viewBox="0 0 112 112" className="h-full w-full -rotate-90">
           <defs>
             <linearGradient id="score-gradient" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="var(--color-brown-500)" />
-              <stop offset="100%" stopColor="var(--color-blue-600)" />
+              <stop offset="0%" stopColor="var(--color-ash-300)" />
+              <stop offset="100%" stopColor="var(--color-ash-50)" />
             </linearGradient>
           </defs>
 
@@ -44,7 +44,7 @@ export default function ScoreRing({ score }: { score: number }) {
             r={RADIUS}
             fill="none"
             strokeWidth="9"
-            className="stroke-brown-100"
+            className="stroke-ash-600"
           />
           <motion.circle
             cx="56"
@@ -64,21 +64,21 @@ export default function ScoreRing({ score }: { score: number }) {
         </svg>
 
         <div className="absolute inset-0 grid place-items-center">
-          <span className="font-display text-2xl font-semibold tabular-nums text-brown-900">
+          <span className="font-display text-2xl font-semibold tabular-nums text-ash-50">
             {display}
-            <span className="text-base text-stone-400">%</span>
+            <span className="text-base text-ash-300">%</span>
           </span>
         </div>
       </div>
 
       <div>
-        <div className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+        <div className="text-xs font-semibold uppercase tracking-wider text-ash-200">
           ATS Match Score
         </div>
         <div className={`mt-1 font-display text-lg font-semibold ${tone}`}>
           {label}
         </div>
-        <p className="mt-1 text-xs leading-relaxed text-stone-500">
+        <p className="mt-1 text-xs leading-relaxed text-ash-200">
           How well your Vault lines up with this posting&rsquo;s keywords.
         </p>
       </div>

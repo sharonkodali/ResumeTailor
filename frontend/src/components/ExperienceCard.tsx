@@ -37,34 +37,38 @@ interface ExperienceCardProps {
   onDelete?: () => void;
 }
 
-/** Each category gets its own tone so the list is scannable by shape alone. */
+/*
+ * Each category gets its own tone so the list is scannable by shape alone.
+ * With no hues left to spend, the rail carries the distinction as a step on
+ * the grey ramp — four values far enough apart to tell apart at 4px wide.
+ */
 const CATEGORY_TONES: Record<string, { chip: string; rail: string; dot: string }> = {
   Work: {
-    chip: 'bg-brown-100 text-brown-800 ring-brown-200',
-    rail: 'from-brown-400 to-brown-600',
-    dot: 'text-brown-500',
+    chip: 'bg-ash-600 text-ash-50 ring-ash-500',
+    rail: 'bg-ash-50',
+    dot: 'text-ash-50',
   },
   Project: {
-    chip: 'bg-blue-100 text-blue-800 ring-blue-200',
-    rail: 'from-blue-400 to-blue-600',
-    dot: 'text-blue-500',
+    chip: 'bg-ash-700 text-ash-100 ring-ash-500',
+    rail: 'bg-ash-100',
+    dot: 'text-ash-100',
   },
   Research: {
-    chip: 'bg-blue-50 text-blue-700 ring-blue-200',
-    rail: 'from-blue-300 to-blue-500',
-    dot: 'text-blue-400',
+    chip: 'bg-ash-700 text-ash-200 ring-ash-600',
+    rail: 'bg-ash-200',
+    dot: 'text-ash-200',
   },
   Leadership: {
-    chip: 'bg-brown-50 text-brown-700 ring-brown-200',
-    rail: 'from-brown-300 to-brown-500',
-    dot: 'text-brown-400',
+    chip: 'bg-ash-800 text-ash-200 ring-ash-600',
+    rail: 'bg-ash-300',
+    dot: 'text-ash-300',
   },
 };
 
 const FALLBACK_TONE = {
-  chip: 'bg-stone-100 text-stone-700 ring-stone-200',
-  rail: 'from-stone-300 to-stone-500',
-  dot: 'text-stone-400',
+  chip: 'bg-ash-800 text-ash-300 ring-ash-600',
+  rail: 'bg-ash-500',
+  dot: 'text-ash-300',
 };
 
 /** Cards start collapsed past this many bullets to keep the list skimmable. */
@@ -95,22 +99,20 @@ export function ExperienceCard({
       exit={{ opacity: 0, x: -24, transition: { duration: 0.2 } }}
       transition={{ duration: 0.3, delay: index * 0.05, ease: 'easeOut' }}
       whileHover={{ y: -2 }}
-      className={`group relative overflow-hidden rounded-2xl border bg-white p-6 pl-7 shadow-card transition-shadow duration-200 hover:shadow-lift ${
-        isEditing
-          ? 'border-blue-300 ring-2 ring-blue-200'
-          : 'border-brown-200/70'
+      className={`group relative overflow-hidden rounded-2xl border bg-ash-900 p-6 pl-7 shadow-card transition-shadow duration-200 hover:shadow-lift ${
+        isEditing ? 'border-ash-50 ring-1 ring-ash-50/40' : 'border-ash-600'
       }`}
     >
       {/* Category rail down the left edge */}
       <span
         aria-hidden
-        className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${tone.rail}`}
+        className={`absolute inset-y-0 left-0 w-1 ${tone.rail}`}
       />
 
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-display text-lg font-semibold tracking-tight text-brown-950">
+            <h3 className="font-display text-lg font-semibold tracking-tight text-ash-50">
               {experience.role}
             </h3>
             <span
@@ -120,16 +122,16 @@ export function ExperienceCard({
               {experience.category}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-stone-600">
-            <Building2 className="h-3.5 w-3.5 text-stone-400" />
+          <div className="flex items-center gap-1.5 text-xs font-medium text-ash-100">
+            <Building2 className="h-3.5 w-3.5 text-ash-300" />
             <span>{experience.company}</span>
           </div>
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-2">
           {experience.dates && (
-            <div className="flex items-center gap-1 rounded-md border border-brown-100 bg-brown-50 px-2.5 py-1 font-mono text-xs text-brown-700">
-              <Calendar className="h-3 w-3 text-brown-400" />
+            <div className="flex items-center gap-1 rounded-md border border-ash-600 bg-ash-800 px-2.5 py-1 font-mono text-xs text-ash-100">
+              <Calendar className="h-3 w-3 text-ash-300" />
               <span>{experience.dates}</span>
             </div>
           )}
@@ -142,7 +144,7 @@ export function ExperienceCard({
                 <button
                   onClick={onEdit}
                   aria-label={`Edit ${experience.role} at ${experience.company}`}
-                  className="inline-flex items-center gap-1 rounded-md border border-brown-200 px-2.5 py-1 text-xs font-semibold text-brown-700 transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                  className="inline-flex items-center gap-1 rounded-md border border-ash-600 px-2.5 py-1 text-xs font-semibold text-ash-100 transition hover:-translate-y-0.5 hover:border-ash-400 hover:bg-ash-700 hover:text-ash-50"
                 >
                   <Pencil className="h-3 w-3" />
                   Edit
@@ -152,7 +154,7 @@ export function ExperienceCard({
                 <button
                   onClick={onDelete}
                   aria-label={`Delete ${experience.role} at ${experience.company}`}
-                  className="inline-flex items-center gap-1 rounded-md border border-rose-200 px-2.5 py-1 text-xs font-semibold text-rose-600 transition hover:-translate-y-0.5 hover:bg-rose-50"
+                  className="inline-flex items-center gap-1 rounded-md border border-rose-500/30 px-2.5 py-1 text-xs font-semibold text-rose-400 transition hover:-translate-y-0.5 hover:border-rose-500/50 hover:bg-rose-500/10"
                 >
                   <Trash2 className="h-3 w-3" />
                   Delete
@@ -163,7 +165,7 @@ export function ExperienceCard({
         </div>
       </div>
 
-      <motion.ul layout className="mt-4 space-y-2.5 text-sm text-stone-700">
+      <motion.ul layout className="mt-4 space-y-2.5 text-sm text-ash-100">
         <AnimatePresence initial={false}>
           {visibleBullets.map((b, idx) => (
             <motion.li
@@ -180,11 +182,11 @@ export function ExperienceCard({
                 <p className="leading-relaxed">{b.text}</p>
                 {b.skills && (
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <Sparkles className="h-3 w-3 text-blue-500" />
+                    <Sparkles className="h-3 w-3 text-ash-200" />
                     {b.skills.split(',').map((skill, sIdx) => (
                       <span
                         key={sIdx}
-                        className="rounded-md border border-blue-200/70 bg-blue-50 px-2 py-0.5 font-mono text-[10px] font-medium text-blue-700 transition-colors hover:border-blue-300 hover:bg-blue-100"
+                        className="rounded-md border border-ash-500 bg-ash-700 px-2 py-0.5 font-mono text-[10px] font-medium text-ash-50 transition-colors hover:border-ash-400 hover:bg-ash-600"
                       >
                         {skill.trim()}
                       </span>
@@ -201,7 +203,7 @@ export function ExperienceCard({
         <button
           onClick={() => setExpanded((open) => !open)}
           aria-expanded={expanded}
-          className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-blue-700 transition hover:text-blue-800"
+          className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-ash-100 transition hover:text-ash-50"
         >
           <ChevronDown
             className={`h-3.5 w-3.5 transition-transform duration-300 ${

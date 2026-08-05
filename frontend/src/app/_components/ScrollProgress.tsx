@@ -20,7 +20,7 @@ export default function ScrollProgress() {
     <motion.div
       aria-hidden
       style={{ scaleX }}
-      className="fixed top-16 left-0 right-0 z-40 h-0.5 origin-left bg-gradient-to-r from-brown-500 via-brown-400 to-blue-500"
+      className="fixed top-16 left-0 right-0 z-40 h-0.5 origin-left bg-gradient-to-r from-ash-500 via-ash-200 to-ash-50"
     />
   );
 }

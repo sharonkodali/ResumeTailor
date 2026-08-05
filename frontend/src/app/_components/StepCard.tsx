@@ -22,8 +22,8 @@ export default function StepCard({
   description: string;
   cta: string;
   icon: keyof typeof ICONS;
-  /** Which half of the palette this step belongs to. */
-  accent: 'brown' | 'blue';
+  /** Which half of the app this step belongs to — vault or tailor. */
+  accent: 'vault' | 'tailor';
   delay?: number;
 }) {
   const Icon = ICONS[icon];
@@ -34,21 +34,23 @@ export default function StepCard({
   const y = useMotionValue(0);
   const glow = useMotionTemplate`radial-gradient(340px circle at ${x}px ${y}px, var(--glow-color), transparent 70%)`;
 
+  // Both cards are monochrome; the vault reads one step quieter than the
+  // tailor, which is the same ordering the rest of the app uses.
   const tone =
-    accent === 'brown'
+    accent === 'vault'
       ? {
-          ring: 'hover:border-brown-300',
-          chip: 'bg-brown-100 text-brown-700',
-          badge: 'from-brown-500 to-brown-700',
-          link: 'text-brown-700',
-          glow: 'rgb(141 98 64 / 0.10)',
+          ring: 'hover:border-ash-500',
+          chip: 'bg-ash-700 text-ash-200',
+          badge: 'bg-ash-700 text-ash-50 ring-1 ring-ash-500',
+          link: 'text-ash-100',
+          glow: 'rgb(242 242 240 / 0.05)',
         }
       : {
-          ring: 'hover:border-blue-300',
-          chip: 'bg-blue-100 text-blue-700',
-          badge: 'from-blue-500 to-blue-700',
-          link: 'text-blue-700',
-          glow: 'rgb(52 94 151 / 0.10)',
+          ring: 'hover:border-ash-400',
+          chip: 'bg-ash-600 text-ash-50',
+          badge: 'bg-ash-50 text-ash-950',
+          link: 'text-ash-50',
+          glow: 'rgb(242 242 240 / 0.08)',
         };
 
   return (
@@ -68,7 +70,7 @@ export default function StepCard({
     >
       <Link
         href={href}
-        className={`relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl border border-brown-200/80 bg-white p-6 shadow-card transition-shadow duration-300 hover:shadow-lift ${tone.ring}`}
+        className={`relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl border border-ash-600 bg-ash-900 p-6 transition-colors duration-300 ${tone.ring}`}
       >
         <motion.span
           aria-hidden
@@ -83,16 +85,14 @@ export default function StepCard({
             {eyebrow}
           </span>
           <span
-            className={`grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br text-white shadow-card ${tone.badge}`}
+            className={`grid h-10 w-10 place-items-center rounded-xl ${tone.badge}`}
           >
             <Icon className="h-5 w-5" />
           </span>
         </div>
 
-        <h2 className="relative font-display text-xl font-semibold text-brown-950">
-          {title}
-        </h2>
-        <p className="relative flex-1 text-sm leading-relaxed text-stone-600">
+        <h2 className="relative text-xl font-semibold text-ash-50">{title}</h2>
+        <p className="relative flex-1 text-sm leading-relaxed text-ash-200">
           {description}
         </p>
 

@@ -32,23 +32,23 @@ export default function NavBar() {
     <header
       className={`sticky top-0 z-50 transition-colors duration-300 ${
         scrolled
-          ? 'border-b border-brown-200/70 bg-canvas/85 backdrop-blur-md'
+          ? 'border-b border-ash-600 bg-canvas/90 backdrop-blur-md'
           : 'border-b border-transparent bg-canvas/60 backdrop-blur-sm'
       }`}
     >
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-6 sm:px-8">
         <Link
           href="/"
-          className="group flex shrink-0 items-center gap-2 font-display text-lg font-semibold tracking-tight text-brown-900"
+          className="group flex shrink-0 items-center gap-2 text-lg font-semibold tracking-tight text-ash-50"
         >
           <motion.span
             whileHover={{ rotate: -12, scale: 1.08 }}
             transition={{ type: 'spring', stiffness: 400, damping: 14 }}
-            className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-brown-600 to-brown-800 text-brown-50 shadow-card"
+            className="grid h-8 w-8 place-items-center rounded-lg bg-ash-50 text-ash-950"
           >
             <Vault className="h-4 w-4" />
           </motion.span>
-          Resume<span className="text-blue-600">Tailor</span>
+          Resume<span className="text-ash-200">Tailor</span>
         </Link>
 
         {/* Desktop nav — the active pill is a single element that slides
@@ -61,23 +61,23 @@ export default function NavBar() {
                 key={href}
                 href={href}
                 aria-current={active ? 'page' : undefined}
-                className={`relative rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`relative rounded-lg px-3 py-1.5 text-sm transition-colors ${
                   active
-                    ? 'text-brown-900'
-                    : 'text-stone-500 hover:text-brown-800'
+                    ? 'font-semibold text-ash-950'
+                    : 'font-medium text-ash-200 hover:text-ash-50'
                 }`}
               >
                 {active && (
                   <motion.span
                     layoutId="nav-pill"
-                    className="absolute inset-0 rounded-lg bg-brown-100 ring-1 ring-brown-200/80"
+                    className="absolute inset-0 rounded-lg bg-ash-50"
                     transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   />
                 )}
                 <span className="relative flex items-center gap-1.5">
                   <Icon
                     className={`h-3.5 w-3.5 ${
-                      active ? 'text-blue-600' : 'text-stone-400'
+                      active ? 'text-ash-950' : 'text-ash-300'
                     }`}
                   />
                   {label}
@@ -92,7 +92,7 @@ export default function NavBar() {
           onClick={() => setMenuOpen((open) => !open)}
           aria-expanded={menuOpen}
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          className="grid h-9 w-9 place-items-center rounded-lg border border-brown-200 text-brown-800 transition hover:bg-brown-50 sm:hidden"
+          className="grid h-9 w-9 place-items-center rounded-lg border border-ash-500 text-ash-100 transition hover:bg-ash-700 hover:text-ash-50 sm:hidden"
         >
           {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
@@ -106,7 +106,7 @@ export default function NavBar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-brown-200/70 bg-canvas sm:hidden"
+            className="overflow-hidden border-t border-ash-600 bg-canvas sm:hidden"
           >
             <div className="space-y-1 px-6 py-3">
               {LINKS.map(({ href, label, icon: Icon }) => {
@@ -121,13 +121,13 @@ export default function NavBar() {
                     aria-current={active ? 'page' : undefined}
                     className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                       active
-                        ? 'bg-brown-100 text-brown-900 ring-1 ring-brown-200'
-                        : 'text-stone-600 hover:bg-brown-50'
+                        ? 'bg-ash-50 text-ash-950'
+                        : 'text-ash-200 hover:bg-ash-700 hover:text-ash-50'
                     }`}
                   >
                     <Icon
                       className={`h-4 w-4 ${
-                        active ? 'text-blue-600' : 'text-stone-400'
+                        active ? 'text-ash-950' : 'text-ash-300'
                       }`}
                     />
                     {label}

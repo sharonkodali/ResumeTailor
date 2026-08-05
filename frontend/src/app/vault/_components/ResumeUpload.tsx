@@ -160,7 +160,7 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
   };
 
   const draftInput =
-    'rounded-lg border border-brown-200 bg-white px-2.5 py-2 text-sm text-brown-950 transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200';
+    'rounded-lg border border-ash-500 bg-ash-700 px-2.5 py-2 text-sm text-ash-50 transition focus:border-ash-300 focus:outline-none focus:ring-2 focus:ring-ash-500';
 
   return (
     <div className="space-y-4">
@@ -181,8 +181,8 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
         }}
         className={`rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors duration-200 ${
           dragging
-            ? 'border-blue-400 bg-blue-50'
-            : 'border-brown-200 bg-brown-50/60 hover:border-brown-300'
+            ? 'border-ash-300 bg-ash-700'
+            : 'border-ash-500 bg-ash-900 hover:border-ash-400'
         }`}
       >
         <input
@@ -211,8 +211,8 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
           }
           className={`mx-auto grid h-12 w-12 place-items-center rounded-xl shadow-card ${
             dragging
-              ? 'bg-blue-600 text-white'
-              : 'bg-white text-brown-700'
+              ? 'bg-ash-50 text-ash-950'
+              : 'bg-ash-700 text-ash-100'
           }`}
         >
           {parsing ? (
@@ -222,14 +222,14 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
           )}
         </motion.span>
 
-        <p className="mt-4 font-display text-base font-semibold text-brown-900">
+        <p className="mt-4 font-display text-base font-semibold text-ash-50">
           {parsing
             ? 'Reading your resume...'
             : dragging
               ? 'Drop it here'
               : 'Import from an existing resume'}
         </p>
-        <p className="mt-1 text-xs text-stone-500">
+        <p className="mt-1 text-xs text-ash-200">
           Drop a PDF, .docx, or LaTeX (.tex) file here — or
         </p>
 
@@ -239,8 +239,8 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
           onClick={() => fileInput.current?.click()}
           className={`mt-4 rounded-lg px-4 py-2 text-sm font-semibold shadow-card transition-all duration-200 ${
             parsing
-              ? 'cursor-not-allowed bg-stone-200 text-stone-500'
-              : 'bg-brown-700 text-brown-50 hover:-translate-y-0.5 hover:bg-brown-800 hover:shadow-lift'
+              ? 'cursor-not-allowed bg-ash-700 text-ash-300'
+              : 'bg-ash-50 text-ash-950 hover:-translate-y-0.5 hover:bg-white hover:shadow-lift'
           }`}
         >
           {parsing ? 'Parsing...' : 'Choose a file'}
@@ -250,7 +250,7 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
           {['.pdf', '.docx', '.tex'].map((ext) => (
             <span
               key={ext}
-              className="rounded-md border border-brown-200 bg-white px-2 py-0.5 font-mono text-[10px] text-brown-700"
+              className="rounded-md border border-ash-500 bg-ash-700 px-2 py-0.5 font-mono text-[10px] text-ash-100"
             >
               {ext}
             </span>
@@ -266,7 +266,7 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
               {error}
             </div>
           </motion.div>
@@ -281,15 +281,15 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="space-y-5 rounded-2xl border border-brown-200/70 bg-white p-6 shadow-card"
+            className="space-y-5 rounded-2xl border border-ash-600 bg-ash-900 p-6 shadow-card"
           >
-            <div className="flex items-start justify-between gap-4 border-b border-brown-100 pb-4">
+            <div className="flex items-start justify-between gap-4 border-b border-ash-600 pb-4">
               <div>
-                <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-brown-950">
-                  <FileText className="h-4.5 w-4.5 text-blue-600" />
+                <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-ash-50">
+                  <FileText className="h-4.5 w-4.5 text-ash-200" />
                   Review what we found in {filename}
                 </h2>
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-ash-200">
                   {drafts.length} experience{drafts.length === 1 ? '' : 's'}{' '}
                   detected. Uncheck anything you do not want, then import.
                   Nothing is saved until you do.
@@ -298,14 +298,14 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
               <button
                 type="button"
                 onClick={discard}
-                className="shrink-0 text-xs font-semibold text-stone-500 transition hover:text-brown-900"
+                className="shrink-0 text-xs font-semibold text-ash-200 transition hover:text-ash-50"
               >
                 Discard
               </button>
             </div>
 
             {!aiStructured && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
                 The AI structuring step was unavailable, so this resume was split
                 up heuristically. Check the company, role, and dates on each
                 entry before importing.
@@ -318,8 +318,8 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
                 layout
                 className={`space-y-3 rounded-xl border p-4 transition-colors duration-200 ${
                   draft.selected
-                    ? 'border-brown-200/70 bg-white'
-                    : 'border-stone-200 bg-stone-50 opacity-60'
+                    ? 'border-ash-600 bg-ash-800'
+                    : 'border-ash-600 bg-ash-950 opacity-50'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -327,7 +327,7 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
                     type="checkbox"
                     checked={draft.selected}
                     onChange={() => updateDraft(i, { selected: !draft.selected })}
-                    className="mt-2.5 h-4 w-4 shrink-0 accent-blue-600"
+                    className="mt-2.5 h-4 w-4 shrink-0 accent-ash-50"
                   />
                   <div className="grid flex-1 grid-cols-1 gap-2 md:grid-cols-4">
                     <input
@@ -370,14 +370,14 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
                         checked={bullet.selected}
                         disabled={!draft.selected}
                         onChange={() => toggleBullet(i, j)}
-                        className="mt-1 h-3.5 w-3.5 shrink-0 accent-blue-600"
+                        className="mt-1 h-3.5 w-3.5 shrink-0 accent-ash-50"
                       />
                       <div className="flex-1">
                         <p
                           className={`text-sm transition-colors ${
                             bullet.selected
-                              ? 'text-stone-700'
-                              : 'text-stone-400 line-through'
+                              ? 'text-ash-100'
+                              : 'text-ash-300 line-through'
                           }`}
                         >
                           {bullet.text}
@@ -387,7 +387,7 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
                             {bullet.skills.split(',').map((skill, k) => (
                               <span
                                 key={k}
-                                className="rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 font-mono text-[10px] text-blue-700"
+                                className="rounded border border-ash-500 bg-ash-700 px-1.5 py-0.5 font-mono text-[10px] text-ash-50"
                               >
                                 {skill.trim()}
                               </span>
@@ -398,7 +398,7 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
                     </li>
                   ))}
                   {draft.bullets.length === 0 && (
-                    <li className="text-xs italic text-stone-400">
+                    <li className="text-xs italic text-ash-300">
                       No bullet points found for this entry — you can add them
                       after importing.
                     </li>
@@ -413,8 +413,8 @@ export default function ResumeUpload({ onImported }: { onImported: () => void })
               disabled={importing || selectedCount === 0}
               className={`w-full rounded-lg py-2.5 text-sm font-semibold shadow-card transition-all duration-200 ${
                 importing || selectedCount === 0
-                  ? 'cursor-not-allowed bg-stone-200 text-stone-500'
-                  : 'bg-blue-700 text-white hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-lift'
+                  ? 'cursor-not-allowed bg-ash-700 text-ash-300'
+                  : 'bg-ash-50 text-ash-950 hover:-translate-y-0.5 hover:bg-white hover:shadow-lift'
               }`}
             >
               {importing ? (

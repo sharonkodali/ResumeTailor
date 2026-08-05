@@ -6,49 +6,46 @@
  * Tailwind v4 is configured here in CSS rather than in tailwind.config.ts —
  * with a bare `@import "tailwindcss"` the JS config is not loaded at all.
  *
- * The scheme is brown + blue, split along what the app actually does:
- *   brown  — the Vault. Warm, archival, "your material on paper."
- *   blue   — the Tailor. Cool, analytical, "what the AI did to it."
- * Neutrals are Tailwind's built-in `stone`, which is warm-tinted and sits
- * against brown without the blue-grey clash you get from `slate`/`gray`.
+ * The scheme is a single monochrome ramp on a near-black page. There is no
+ * accent hue: emphasis is carried by *lightness* alone, which is what makes
+ * the interface read as quiet rather than decorated.
+ *
+ * The two sides of the app used to be split brown/blue. That distinction is
+ * still there, now expressed as surface brightness instead of hue:
+ *   ash-800  — the Vault. Sunken, "your raw material."
+ *   ash-700  — the Tailor. Raised and brighter, "what the AI did to it."
  */
 @theme {
-  /* Brown — warm umber. 600 is the primary; white text on it clears AA. */
-  --color-brown-50: #fbf7f3;
-  --color-brown-100: #f4ebe1;
-  --color-brown-200: #e8d6c3;
-  --color-brown-300: #d6b99b;
-  --color-brown-400: #c0976f;
-  --color-brown-500: #a87b52;
-  --color-brown-600: #8d6240;
-  --color-brown-700: #714e34;
-  --color-brown-800: #5a3f2c;
-  --color-brown-900: #493426;
-  --color-brown-950: #2a1d15;
-
-  /* Blue — denim/steel. Deliberately overrides Tailwind's default blue so
-     any stray `text-blue-600` still lands on-palette. */
-  --color-blue-50: #f1f5fa;
-  --color-blue-100: #e0eaf6;
-  --color-blue-200: #c4d8ee;
-  --color-blue-300: #9bbce0;
-  --color-blue-400: #6b99cd;
-  --color-blue-500: #4577b4;
-  --color-blue-600: #345e97;
-  --color-blue-700: #2b4c7a;
-  --color-blue-800: #274063;
-  --color-blue-900: #243851;
-  --color-blue-950: #172436;
+  /* The whole palette. Ordered light → dark like every Tailwind ramp, so on a
+     dark page the low numbers are text and the high numbers are surfaces. */
+  --color-ash-50: #f2f2f0; /* primary text, and inverted button fills */
+  --color-ash-100: #c9c9c4; /* body copy */
+  --color-ash-200: #9c9c96; /* secondary copy, labels */
+  --color-ash-300: #7a7a75; /* muted copy, placeholders, line numbers */
+  --color-ash-400: #55554f; /* disabled text */
+  --color-ash-500: #3a3a37; /* border, emphasised */
+  --color-ash-600: #2a2a28; /* border, default */
+  --color-ash-700: #1e1e1b; /* raised surface — inputs, chips, AI side */
+  --color-ash-800: #1a1a17; /* sunken surface — Vault side, code wells */
+  --color-ash-900: #151513; /* card */
+  --color-ash-950: #0b0b0b; /* page */
 
   /* Page surfaces */
-  --color-canvas: #fdfaf6;
-  --color-ink: #2a1d15;
+  --color-canvas: #0b0b0b;
+  --color-ink: #f2f2f0;
 
-  --font-display: var(--font-lora), Georgia, "Times New Roman", serif;
+  /* One typeface throughout. Outfit's flat terminals and wide counters hold
+     up at 11px label size, which is where most of this UI lives. */
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-display: var(--font-outfit), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --shadow-card: 0 1px 2px rgb(42 29 21 / 0.04), 0 1px 3px rgb(42 29 21 / 0.06);
-  --shadow-lift: 0 12px 28px -10px rgb(42 29 21 / 0.18), 0 4px 10px -4px rgb(42 29 21 / 0.1);
-  --shadow-ring: 0 0 0 1px rgb(141 98 64 / 0.12);
+  /* Drop shadows barely register on black, so depth comes from the border
+     tokens above. These stay subtle and exist mostly for hover lift. */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lift:
+    0 12px 28px -10px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(242 242 240 / 0.06);
+  --shadow-ring: 0 0 0 1px rgb(242 242 240 / 0.08);
 
   --animate-drift: drift 22s ease-in-out infinite;
   --animate-drift-slow: drift 30s ease-in-out infinite reverse;
@@ -79,21 +76,22 @@
 
   @keyframes pulse-ring {
     0% {
-      opacity: 0.5;
+      opacity: 0.6;
       transform: scale(0.9);
     }
     70%,
     100% {
       opacity: 0;
-      transform: scale(1.6);
+      transform: scale(1.8);
     }
   }
 }
 
 @layer base {
   html {
-    /* The palette is light-only; stop browsers from inverting form controls. */
-    color-scheme: light;
+    /* The palette is dark-only; this is what makes native form controls,
+       scrollbars and autofill render dark instead of blinding white. */
+    color-scheme: dark;
     scroll-behavior: smooth;
   }
 
@@ -103,14 +101,14 @@
   }
 
   ::selection {
-    background-color: var(--color-brown-200);
-    color: var(--color-brown-950);
+    background-color: var(--color-ash-50);
+    color: var(--color-ash-950);
   }
 
   /* One focus treatment everywhere, so keyboard users get the same affordance
      on links, buttons, inputs and the custom controls alike. */
   :focus-visible {
-    outline: 2px solid var(--color-blue-600);
+    outline: 2px solid var(--color-ash-50);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -118,42 +116,46 @@
   input,
   textarea,
   select {
-    background-color: white;
+    background-color: var(--color-ash-700);
+    color: var(--color-ash-50);
   }
 
   input::placeholder,
   textarea::placeholder {
-    color: var(--color-stone-400);
+    color: var(--color-ash-300);
   }
 }
 
 @layer components {
-  /* Warm scrollbars inside scrollable panels (diff view, long lists). */
+  /* Scrollbars inside scrollable panels (diff view, long lists). Left to the
+     browser they come back as light chrome on top of a black surface. */
   .scroll-warm {
     scrollbar-width: thin;
-    scrollbar-color: var(--color-brown-300) transparent;
+    scrollbar-color: var(--color-ash-500) transparent;
   }
   .scroll-warm::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
   .scroll-warm::-webkit-scrollbar-thumb {
-    background-color: var(--color-brown-300);
+    background-color: var(--color-ash-500);
     border: 3px solid transparent;
     background-clip: content-box;
     border-radius: 999px;
   }
   .scroll-warm::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-brown-400);
+    background-color: var(--color-ash-400);
   }
 }
 
+/* Headline treatment: white fading toward grey, so the type has some depth
+   without introducing a second colour. */
 @utility text-gradient {
   background-image: linear-gradient(
     100deg,
-    var(--color-brown-700) 0%,
-    var(--color-brown-500) 35%,
-    var(--color-blue-600) 100%
+    #ffffff 0%,
+    var(--color-ash-100) 55%,
+    var(--color-ash-300) 100%
   );
   background-clip: text;
   color: transparent;
@@ -163,25 +165,25 @@
 @utility shimmer {
   background-image: linear-gradient(
     90deg,
-    var(--color-brown-100) 25%,
-    var(--color-brown-50) 37%,
-    var(--color-brown-100) 63%
+    var(--color-ash-900) 25%,
+    var(--color-ash-700) 37%,
+    var(--color-ash-900) 63%
   );
   background-size: 200% 100%;
   animation: var(--animate-shimmer);
 }
 
-/* Faint paper tooth over the hero, so the large warm areas are not flat. */
+/* Faint tooth over the hero, so the large flat black areas are not dead. */
 @utility grain {
   position: relative;
 }
 @utility grain-overlay {
   background-image: radial-gradient(
-    var(--color-brown-300) 0.5px,
+    var(--color-ash-500) 0.5px,
     transparent 0.5px
   );
   background-size: 14px 14px;
-  opacity: 0.25;
+  opacity: 0.5;
 }
 
 @media (prefers-reduced-motion: reduce) {

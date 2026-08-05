@@ -5,18 +5,20 @@ import { useMemo, useState } from 'react';
 import { collapseUnchanged, diffLines } from '@/lib/diff';
 
 /*
- * Sides are coloured by origin rather than by the usual red/green: the left is
- * what came out of the Vault (brown), the right is what the tailor produced
- * (blue). Nothing here is an error, so red/green would read wrong.
+ * Sides are distinguished by weight rather than by the usual red/green: the
+ * left is what came out of the Vault (sunken, dimmer), the right is what the
+ * tailor produced (raised, full white). Nothing here is an error, so red/green
+ * would read wrong. An empty half is left unfilled so it is obvious at a
+ * glance which side actually has a line on it.
  */
 const ROW_STYLES: Record<string, { left: string; right: string }> = {
-  same: { left: 'text-stone-500', right: 'text-stone-500' },
+  same: { left: 'text-ash-300', right: 'text-ash-300' },
   changed: {
-    left: 'bg-brown-50 text-brown-900',
-    right: 'bg-blue-50 text-blue-900',
+    left: 'bg-ash-800 text-ash-100',
+    right: 'bg-ash-700 text-ash-50',
   },
-  removed: { left: 'bg-brown-50 text-brown-900', right: 'bg-stone-50' },
-  added: { left: 'bg-stone-50', right: 'bg-blue-50 text-blue-900' },
+  removed: { left: 'bg-ash-800 text-ash-100', right: '' },
+  added: { left: '', right: 'bg-ash-700 text-ash-50' },
 };
 
 export default function LatexDiff({
@@ -37,18 +39,18 @@ export default function LatexDiff({
   const changeCount = rows.filter((r) => r.kind !== 'same').length;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-brown-200/70 bg-white shadow-card">
-      <div className="flex items-center justify-between gap-4 border-b border-brown-100 bg-brown-50/70 px-4 py-2.5 text-xs">
+    <div className="overflow-hidden rounded-xl border border-ash-600 bg-ash-900 shadow-card">
+      <div className="flex items-center justify-between gap-4 border-b border-ash-600 bg-ash-800 px-4 py-2.5 text-xs">
         <div className="flex items-center gap-4">
-          <span className="font-semibold text-brown-800">Original</span>
-          <span className="font-semibold text-blue-700">Tailored</span>
-          <span className="text-stone-400">
+          <span className="font-semibold text-ash-100">Original</span>
+          <span className="font-semibold text-ash-50">Tailored</span>
+          <span className="text-ash-300">
             {changeCount} changed line{changeCount === 1 ? '' : 's'}
           </span>
         </div>
         <button
           onClick={() => setShowAll(!showAll)}
-          className="font-semibold text-blue-700 transition hover:text-blue-900 hover:underline"
+          className="font-semibold text-ash-100 transition hover:text-ash-50 hover:underline"
         >
           {showAll ? 'Collapse unchanged' : 'Show whole file'}
         </button>
@@ -62,8 +64,8 @@ export default function LatexDiff({
             {visible.map((row, i) => {
               if (row.kind === 'skipped') {
                 return (
-                  <tr key={`skip-${i}`} className="bg-brown-50/60">
-                    <td colSpan={4} className="px-4 py-1 text-center text-[11px] text-stone-400">
+                  <tr key={`skip-${i}`} className="bg-ash-800">
+                    <td colSpan={4} className="px-4 py-1 text-center text-[11px] text-ash-300">
                       {row.count} unchanged line{row.count === 1 ? '' : 's'}
                     </td>
                   </tr>
@@ -73,13 +75,13 @@ export default function LatexDiff({
               const style = ROW_STYLES[row.kind];
               return (
                 <tr key={i} className="align-top">
-                  <td className="w-10 select-none border-r border-brown-100 px-2 text-right text-[10px] text-stone-300">
+                  <td className="w-10 select-none border-r border-ash-600 px-2 text-right text-[10px] text-ash-300">
                     {row.leftNumber ?? ''}
                   </td>
                   <td className={`px-3 py-0.5 whitespace-pre w-1/2 ${style.left}`}>
                     {row.left ?? ''}
                   </td>
-                  <td className="w-10 select-none border-x border-brown-100 px-2 text-right text-[10px] text-stone-300">
+                  <td className="w-10 select-none border-x border-ash-600 px-2 text-right text-[10px] text-ash-300">
                     {row.rightNumber ?? ''}
                   </td>
                   <td className={`px-3 py-0.5 whitespace-pre w-1/2 ${style.right}`}>

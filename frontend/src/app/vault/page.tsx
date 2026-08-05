@@ -198,20 +198,20 @@ export default function VaultPage() {
   };
 
   const inputClass =
-    'w-full rounded-lg border border-brown-200 bg-white px-3 py-2 text-sm text-brown-950 transition placeholder:text-stone-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200';
+    'w-full rounded-lg border border-ash-500 bg-ash-700 px-3 py-2 text-sm text-ash-50 transition placeholder:text-ash-300 focus:border-ash-300 focus:outline-none focus:ring-2 focus:ring-ash-500';
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-6 py-10 sm:px-8">
       {/* Header */}
-      <div className="flex flex-col justify-between gap-4 border-b border-brown-200/70 pb-6 md:flex-row md:items-end">
+      <div className="flex flex-col justify-between gap-4 border-b border-ash-600 pb-6 md:flex-row md:items-end">
         <div>
-          <h1 className="flex items-center gap-2.5 font-display text-3xl font-semibold text-brown-950">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brown-600 to-brown-800 text-brown-50 shadow-card">
+          <h1 className="flex items-center gap-2.5 font-display text-3xl font-semibold text-ash-50">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-ash-50 text-ash-950">
               <Database className="h-5 w-5" />
             </span>
             Master Experience Vault
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-stone-600">
+          <p className="mt-2 max-w-2xl text-sm text-ash-100">
             Store and manage all your raw roles, projects, and bullet points in
             one central database.
           </p>
@@ -220,14 +220,14 @@ export default function VaultPage() {
         <div className="flex shrink-0 gap-3">
           <button
             onClick={() => setShowUpload(!showUpload)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-brown-200 bg-white px-4 py-2 text-sm font-semibold text-brown-800 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-300 hover:text-blue-700 hover:shadow-lift"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-ash-600 bg-ash-900 px-4 py-2 text-sm font-semibold text-ash-100 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-ash-400 hover:text-ash-50 hover:shadow-lift"
           >
-            <Sparkles className="h-4 w-4 text-blue-600" />
+            <Sparkles className="h-4 w-4 text-ash-50" />
             {showUpload ? 'Hide Upload' : 'Upload Resume'}
           </button>
           <button
             onClick={() => (showForm ? closeForm() : setShowForm(true))}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brown-700 px-4 py-2 text-sm font-semibold text-brown-50 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:bg-brown-800 hover:shadow-lift"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-ash-50 px-4 py-2 text-sm font-semibold text-ash-950 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-lift"
           >
             <motion.span
               animate={{ rotate: showForm ? 45 : 0 }}
@@ -244,25 +244,31 @@ export default function VaultPage() {
       {!loading && experiences.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Experiences', value: experiences.length, tone: 'brown' },
-            { label: 'Bullet points', value: bulletCount, tone: 'brown' },
-            { label: 'Distinct skills', value: skillCount, tone: 'blue' },
-          ].map(({ label, value, tone }, i) => (
+            { label: 'Experiences', value: experiences.length, lead: false },
+            { label: 'Bullet points', value: bulletCount, lead: false },
+            // The derived figure is the interesting one, so it gets the
+            // raised surface rather than a colour of its own.
+            { label: 'Distinct skills', value: skillCount, lead: true },
+          ].map(({ label, value, lead }, i) => (
             <motion.div
               key={label}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06, duration: 0.35 }}
-              className="rounded-xl border border-brown-200/70 bg-white p-4 shadow-card"
+              className={`rounded-xl border p-4 ${
+                lead
+                  ? 'border-ash-500 bg-ash-700'
+                  : 'border-ash-600 bg-ash-900'
+              }`}
             >
               <div
-                className={`font-display text-2xl font-semibold ${
-                  tone === 'blue' ? 'text-blue-700' : 'text-brown-800'
+                className={`text-2xl font-semibold ${
+                  lead ? 'text-ash-50' : 'text-ash-100'
                 }`}
               >
                 {value}
               </div>
-              <div className="mt-0.5 text-xs font-medium text-stone-500">
+              <div className="mt-0.5 text-xs font-medium text-ash-200">
                 {label}
               </div>
             </motion.div>
@@ -278,12 +284,12 @@ export default function VaultPage() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="flex items-start justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="flex items-start justify-between gap-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
               <span>{error}</span>
               <button
                 onClick={() => setError('')}
                 aria-label="Dismiss error"
-                className="shrink-0 text-rose-400 transition hover:text-rose-700"
+                className="shrink-0 text-rose-400/70 transition hover:text-rose-300"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -325,14 +331,14 @@ export default function VaultPage() {
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="space-y-6 rounded-2xl border border-brown-200/70 bg-brown-50/70 p-6 shadow-card">
-              <h2 className="font-display text-xl font-semibold text-brown-950">
+            <div className="space-y-6 rounded-2xl border border-ash-600 bg-ash-900 p-6">
+              <h2 className="font-display text-xl font-semibold text-ash-50">
                 {editingId ? 'Edit Experience Entry' : 'New Experience Entry'}
               </h2>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-brown-800">
+                  <label className="block text-sm font-medium text-ash-100">
                     Company / Organization
                   </label>
                   <input
@@ -345,7 +351,7 @@ export default function VaultPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-brown-800">
+                  <label className="block text-sm font-medium text-ash-100">
                     Role / Title
                   </label>
                   <input
@@ -358,7 +364,7 @@ export default function VaultPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-brown-800">
+                  <label className="block text-sm font-medium text-ash-100">
                     Dates
                   </label>
                   <input
@@ -370,7 +376,7 @@ export default function VaultPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-brown-800">
+                  <label className="block text-sm font-medium text-ash-100">
                     Category
                   </label>
                   <select
@@ -389,13 +395,13 @@ export default function VaultPage() {
               {/* Dynamic Bullets Section */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="block text-sm font-semibold text-brown-900">
+                  <label className="block text-sm font-semibold text-ash-50">
                     Bullet Points
                   </label>
                   <button
                     type="button"
                     onClick={addBulletField}
-                    className="text-xs font-semibold text-blue-700 transition hover:text-blue-800 hover:underline"
+                    className="text-xs font-semibold text-ash-50 transition hover:text-ash-50 hover:underline"
                   >
                     + Add Another Bullet
                   </button>
@@ -410,9 +416,9 @@ export default function VaultPage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: -12 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-start gap-2 rounded-lg border border-brown-200/70 bg-white p-3 shadow-card"
+                      className="flex items-start gap-2 rounded-lg border border-ash-600 bg-ash-800 p-3"
                     >
-                      <span className="mt-2 select-none font-mono text-xs text-stone-400">
+                      <span className="mt-2 select-none font-mono text-xs text-ash-300">
                         {index + 1}
                       </span>
                       <div className="flex-1 space-y-2">
@@ -440,7 +446,7 @@ export default function VaultPage() {
                           type="button"
                           onClick={() => removeBulletField(index)}
                           aria-label={`Remove bullet ${index + 1}`}
-                          className="rounded-md p-1.5 text-stone-400 transition hover:bg-rose-50 hover:text-rose-600"
+                          className="rounded-md p-1.5 text-ash-300 transition hover:bg-rose-500/10 hover:text-rose-400"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -453,7 +459,7 @@ export default function VaultPage() {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="flex-1 rounded-lg bg-blue-700 py-2.5 text-sm font-semibold text-white shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-lift"
+                  className="flex-1 rounded-lg bg-ash-50 py-2.5 text-sm font-semibold text-ash-950 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-lift"
                 >
                   {editingId ? 'Update Experience' : 'Save Experience to Vault'}
                 </button>
@@ -461,7 +467,7 @@ export default function VaultPage() {
                   <button
                     type="button"
                     onClick={closeForm}
-                    className="rounded-lg border border-brown-200 bg-white px-6 py-2.5 text-sm font-semibold text-brown-800 transition hover:bg-brown-50"
+                    className="rounded-lg border border-ash-500 bg-ash-700 px-6 py-2.5 text-sm font-semibold text-ash-50 transition hover:bg-ash-600"
                   >
                     Cancel
                   </button>
@@ -476,7 +482,7 @@ export default function VaultPage() {
       {!loading && experiences.length > 0 && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-xs">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ash-300" />
             <input
               type="search"
               value={query}
@@ -494,13 +500,13 @@ export default function VaultPage() {
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={`relative rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    active ? 'text-brown-50' : 'text-stone-600 hover:text-brown-800'
+                    active ? 'text-ash-950' : 'text-ash-200 hover:text-ash-50'
                   }`}
                 >
                   {active && (
                     <motion.span
                       layoutId="category-pill"
-                      className="absolute inset-0 rounded-full bg-brown-700"
+                      className="absolute inset-0 rounded-full bg-ash-50"
                       transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                     />
                   )}
@@ -524,16 +530,16 @@ export default function VaultPage() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-2 rounded-2xl border-2 border-dashed border-brown-200 bg-brown-50/50 py-16 text-center"
+            className="space-y-2 rounded-2xl border-2 border-dashed border-ash-600 bg-ash-800 py-16 text-center"
           >
-            <p className="font-display text-lg font-semibold text-brown-900">
+            <p className="font-display text-lg font-semibold text-ash-50">
               Your Master Vault is empty.
             </p>
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-ash-200">
               Click &quot;Add Experience&quot; above to store your first entry, or{' '}
               <button
                 onClick={() => setShowUpload(true)}
-                className="font-semibold text-blue-700 underline-offset-2 hover:underline"
+                className="font-semibold text-ash-50 underline-offset-2 hover:underline"
               >
                 upload an existing resume
               </button>{' '}
@@ -541,8 +547,8 @@ export default function VaultPage() {
             </p>
           </motion.div>
         ) : visible.length === 0 ? (
-          <div className="rounded-2xl border border-brown-200/70 bg-white py-14 text-center">
-            <p className="text-sm text-stone-600">
+          <div className="rounded-2xl border border-ash-600 bg-ash-900 py-14 text-center">
+            <p className="text-sm text-ash-100">
               Nothing in the Vault matches that filter.
             </p>
             <button
@@ -550,7 +556,7 @@ export default function VaultPage() {
                 setQuery('');
                 setActiveCategory('All');
               }}
-              className="mt-2 text-sm font-semibold text-blue-700 hover:underline"
+              className="mt-2 text-sm font-semibold text-ash-50 hover:underline"
             >
               Clear filters
             </button>

@@ -50,7 +50,7 @@ export default function ConfirmDialog({
           transition={{ duration: 0.15 }}
         >
           <div
-            className="absolute inset-0 bg-brown-950/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={onCancel}
           />
 
@@ -62,20 +62,22 @@ export default function ConfirmDialog({
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.96, y: 8, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-            className="relative w-full max-w-md rounded-2xl border border-brown-200 bg-white p-6 shadow-lift"
+            className="relative w-full max-w-md rounded-2xl border border-ash-600 bg-ash-900 p-6 shadow-lift"
           >
             <div className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-rose-50 text-rose-600">
+              {/* The one place a hue survives: a destructive action should not
+                  look like every other button on the page. */}
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400">
                 <AlertTriangle className="h-5 w-5" />
               </span>
               <div>
                 <h2
                   id="confirm-title"
-                  className="font-display text-lg font-semibold text-brown-950"
+                  className="text-lg font-semibold text-ash-50"
                 >
                   {title}
                 </h2>
-                <p className="mt-1 text-sm leading-relaxed text-stone-600">
+                <p className="mt-1 text-sm leading-relaxed text-ash-100">
                   {body}
                 </p>
               </div>
@@ -86,14 +88,14 @@ export default function ConfirmDialog({
                 ref={cancelRef}
                 type="button"
                 onClick={onCancel}
-                className="rounded-lg border border-brown-200 px-4 py-2 text-sm font-semibold text-brown-800 transition hover:bg-brown-50"
+                className="rounded-lg border border-ash-500 bg-ash-700 px-4 py-2 text-sm font-semibold text-ash-50 transition hover:bg-ash-600"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={onConfirm}
-                className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-card transition hover:bg-rose-700"
+                className="rounded-lg bg-ash-50 px-4 py-2 text-sm font-semibold text-ash-950 transition hover:bg-white"
               >
                 {confirmLabel}
               </button>
