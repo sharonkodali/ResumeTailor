@@ -1,3 +1,13 @@
+"""
+Rewrite Master Vault bullet points to target a job description.
+
+Every bullet this module returns is a rewrite of something the user actually
+wrote. When the model cannot be reached it raises rather than returning
+substitute content: a resume bullet the candidate never earned is worse than
+no bullet at all, and there is no way for the UI to tell the two apart once a
+plausible-looking rewrite is on screen.
+"""
+
 import os
 from typing import List
 
@@ -9,6 +19,21 @@ load_dotenv()
 
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key) if api_key else None
+
+NO_KEY_HINT = (
+    "AI tailoring is unavailable: no OPENAI_API_KEY is configured. "
+    "Add one to backend/.env and restart the backend."
+)
+
+
+class TailorUnavailable(Exception):
+    """
+    Raised when no tailoring could be performed.
+
+    Carries a message written for the person at the keyboard — it is surfaced
+    verbatim in the UI's error banner.
+    """
+
 
 class TailoredBullet(BaseModel):
     company: str
@@ -27,32 +52,13 @@ def tailor_resume_bullets(job_description: str, raw_experiences: list) -> Tailor
     """
     Takes raw vault experiences and a target job description, and returns
     structured, ATS-tailored bullet points using gpt-4o-mini.
+
+    Raises TailorUnavailable when no key is configured or the model call
+    fails, so the caller reports the problem instead of showing invented
+    bullets as if they were the user's own.
     """
-    # If no OpenAI client is configured, return a helpful mock response
-    # so the frontend can be developed / tested without an active key.
     if client is None:
-        return TailorResponse(
-            match_score=75,
-            extracted_keywords=["FastAPI", "Python", "APIs", "SQLAlchemy"],
-            tailored_bullets=[
-                TailoredBullet(
-                    company="ExampleCorp",
-                    role="Backend Engineer",
-                    original_bullet="Built REST endpoints for internal tools.",
-                    tailored_bullet="Engineered and optimized FastAPI REST endpoints to serve high-throughput API requests, reducing latency by 30%.",
-                    skills_highlighted=["FastAPI", "Python", "APIs"],
-                    impact_reasoning="Rewrote synchronous handlers to async and added connection pooling, improving response times and scalability."
-                ),
-                TailoredBullet(
-                    company="ExampleCorp",
-                    role="Backend Engineer",
-                    original_bullet="Worked on database integration and migrations.",
-                    tailored_bullet="Designed and integrated SQLAlchemy models with automated migrations, ensuring data integrity across releases.",
-                    skills_highlighted=["SQLAlchemy", "Databases"],
-                    impact_reasoning="Introduced transactional migration strategy and tests to prevent schema drift."
-                ),
-            ],
-        )
+        raise TailorUnavailable(NO_KEY_HINT)
 
     system_prompt = (
         "You are an expert technical resume writer and ATS optimization engine. "
@@ -77,22 +83,18 @@ def tailor_resume_bullets(job_description: str, raw_experiences: list) -> Tailor
             ],
             response_format=TailorResponse,
         )
+    except Exception as exc:
+        # Quota, rate limit, network. The reason is worth passing through —
+        # "insufficient_quota" tells the user exactly what to go fix.
+        raise TailorUnavailable(f"AI tailoring is unavailable: {exc}") from exc
 
-        return completion.choices[0].message.parsed
-    except Exception:
-        # On any OpenAI error (quota, rate limit, etc.), return a mock
-        # response so the frontend remains usable during local development.
-        return TailorResponse(
-            match_score=70,
-            extracted_keywords=["FastAPI", "Python", "APIs"],
-            tailored_bullets=[
-                TailoredBullet(
-                    company="ExampleCorp",
-                    role="Backend Engineer",
-                    original_bullet="Implemented REST endpoints.",
-                    tailored_bullet="Implemented and optimized FastAPI REST endpoints to improve API performance and reliability.",
-                    skills_highlighted=["FastAPI", "Python"],
-                    impact_reasoning="Improved throughput and added monitoring to catch regressions early."
-                )
-            ],
+    parsed = completion.choices[0].message.parsed
+    if parsed is None:
+        # The call succeeded but the response did not satisfy the schema, so
+        # there is nothing trustworthy to show.
+        raise TailorUnavailable(
+            "The tailoring model returned a response that could not be read. "
+            "Try again."
         )
+
+    return parsed

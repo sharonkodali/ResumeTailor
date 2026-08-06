@@ -1,6 +1,12 @@
 """Vault CRUD and tailoring endpoints. The `client` fixture lives in conftest.py."""
 
+from types import SimpleNamespace
+
+import pytest
+
 import main
+from services import ai_tailor
+from services.ai_tailor import TailorUnavailable
 
 
 def make_payload(**overrides):
@@ -152,3 +158,79 @@ def test_tailor_endpoint_monkeypatched(client, monkeypatch):
 def test_tailor_endpoint_rejects_empty_vault(client):
     resp = client.post("/api/tailor", json={"job_description": "We need a FastAPI engineer"})
     assert resp.status_code == 400
+
+
+def test_tailoring_without_a_key_raises_instead_of_inventing_bullets(monkeypatch):
+    """
+    A fabricated bullet is indistinguishable from a real one once it is on
+    screen, so the absence of a model has to surface as a failure.
+    """
+    monkeypatch.setattr(ai_tailor, "client", None)
+
+    with pytest.raises(TailorUnavailable) as excinfo:
+        ai_tailor.tailor_resume_bullets("We need a FastAPI engineer", [])
+
+    # The message has to tell the user what to go fix.
+    assert "OPENAI_API_KEY" in str(excinfo.value)
+
+
+def test_a_model_failure_raises_rather_than_returning_substitute_content(monkeypatch):
+    def explode(**kwargs):
+        raise RuntimeError("insufficient_quota")
+
+    monkeypatch.setattr(
+        ai_tailor,
+        "client",
+        SimpleNamespace(
+            beta=SimpleNamespace(
+                chat=SimpleNamespace(completions=SimpleNamespace(parse=explode))
+            )
+        ),
+    )
+
+    with pytest.raises(TailorUnavailable) as excinfo:
+        ai_tailor.tailor_resume_bullets("We need a FastAPI engineer", [])
+
+    # The underlying reason is passed through — "insufficient_quota" is
+    # actionable in a way that "tailoring failed" is not.
+    assert "insufficient_quota" in str(excinfo.value)
+
+
+def test_an_unreadable_model_response_raises(monkeypatch):
+    """A call that parses to nothing leaves no trustworthy content to return."""
+    completion = SimpleNamespace(
+        choices=[SimpleNamespace(message=SimpleNamespace(parsed=None))]
+    )
+
+    monkeypatch.setattr(
+        ai_tailor,
+        "client",
+        SimpleNamespace(
+            beta=SimpleNamespace(
+                chat=SimpleNamespace(
+                    completions=SimpleNamespace(parse=lambda **kwargs: completion)
+                )
+            )
+        ),
+    )
+
+    with pytest.raises(TailorUnavailable):
+        ai_tailor.tailor_resume_bullets("We need a FastAPI engineer", [])
+
+
+def test_tailor_endpoint_503s_when_the_model_is_unavailable(client, monkeypatch):
+    client.post("/api/experiences", json=make_payload())
+
+    def unavailable(job_description, raw_exps):
+        raise TailorUnavailable("AI tailoring is unavailable: insufficient_quota")
+
+    monkeypatch.setattr(main, "tailor_resume_bullets", unavailable)
+
+    resp = client.post("/api/tailor", json={"job_description": "We need a FastAPI engineer"})
+
+    # 503, not 500: the request and the Vault are both fine.
+    assert resp.status_code == 503
+    # The reason reaches the UI's error banner verbatim.
+    assert "insufficient_quota" in resp.json()["detail"]
+    # Nothing was invented to fill the gap.
+    assert "tailored_bullets" not in resp.json()

@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from database import engine, Base, get_db
 import models, schemas
 from services import latex_compiler
-from services.ai_tailor import tailor_resume_bullets
+from services.ai_tailor import TailorUnavailable, tailor_resume_bullets
 from services.latex_builder import build_resume
 from services.latex_tailor import tailor_latex
 from services.resume_extractor import extract_experiences
@@ -448,18 +448,19 @@ def tailor_resume(req: schemas.TailorRequest, db: Session = Depends(get_db)):
 
     try:
         resp = tailor_resume_bullets(req.job_description, raw_exps)
+    except TailorUnavailable as exc:
+        # 503: the request was fine and the Vault is fine — the model is not
+        # reachable. Nothing is invented to paper over it; the user is told.
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
+        ) from exc
 
+    try:
         # Normalize response keys to match frontend expectations:
         # Frontend expects tailored_bullets -> [{ original_text, tailored_text, reasoning }, ...]
         # Backend AI service returns TailorResponse with TailoredBullet items that may
         # include fields like original_bullet, tailored_bullet, impact_reasoning.
-        if resp is None:
-            return {
-                "match_score": 0,
-                "extracted_keywords": [],
-                "tailored_bullets": [],
-            }
-
+        #
         # If resp is a Pydantic model, access attributes; if dict, use keys.
         match_score = getattr(resp, "match_score", resp.get("match_score") if isinstance(resp, dict) else 0)
         extracted = getattr(resp, "extracted_keywords", resp.get("extracted_keywords") if isinstance(resp, dict) else [])
@@ -494,4 +495,8 @@ def tailor_resume(req: schemas.TailorRequest, db: Session = Depends(get_db)):
             "tailored_bullets": normalized_bullets,
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"OpenAI Service Error: {str(e)}")
+        # The model call already succeeded by this point, so anything landing
+        # here is a shape we failed to read — not a service outage.
+        raise HTTPException(
+            status_code=500, detail=f"Could not read the tailoring result: {e}"
+        ) from e
