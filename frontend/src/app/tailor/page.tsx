@@ -10,6 +10,7 @@ import {
   Wand2,
   X,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import ScoreRing from './_components/ScoreRing';
@@ -93,6 +94,16 @@ export default function TailorPage() {
         <p className="mt-2 max-w-2xl text-sm text-ash-100">
           Paste a target job posting below. Your Master Vault is matched against
           the role keywords and rewritten into optimized bullet points.
+        </p>
+        <p className="mt-3 text-xs text-ash-300">
+          Have your resume as a <code className="font-mono">.tex</code> file?{' '}
+          <Link
+            href="/tailor/latex"
+            className="font-semibold text-ash-100 underline transition hover:text-ash-50"
+          >
+            Tailor the document itself
+          </Link>{' '}
+          and get a compiled PDF back.
         </p>
       </div>
 

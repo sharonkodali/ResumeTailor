@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Layers, Menu, Sparkles, Vault, X } from 'lucide-react';
+import { FileCode, Layers, Menu, Sparkles, Vault, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -10,6 +10,7 @@ const LINKS = [
   { href: '/', label: 'Home', icon: Layers },
   { href: '/vault', label: 'Master Vault', icon: Vault },
   { href: '/tailor', label: 'AI Tailor', icon: Sparkles },
+  { href: '/tailor/latex', label: 'LaTeX Tailor', icon: FileCode },
 ] as const;
 
 export default function NavBar() {
