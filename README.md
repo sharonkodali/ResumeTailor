@@ -1,4 +1,4 @@
-# Intelli Resume
+# ResumeTailor
 
 AI-powered resume tailoring tool and application tracker built with a FastAPI backend and a Next.js frontend.
 
