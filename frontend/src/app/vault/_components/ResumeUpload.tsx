@@ -3,8 +3,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { FileText, Loader2, UploadCloud } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { API } from '@/lib/api';
 
-const API = 'http://localhost:8000';
 const ACCEPTED = '.pdf,.docx,.tex';
 const CATEGORIES = ['Work', 'Project', 'Research', 'Leadership'] as const;
 

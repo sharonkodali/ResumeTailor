@@ -13,8 +13,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 
 import ConfirmDialog from '../../../_components/ConfirmDialog';
-
-const API = 'http://localhost:8000';
+import { API } from '@/lib/api';
 
 export interface ResumeSource {
   id: number;

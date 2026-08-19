@@ -16,8 +16,7 @@ import LatexDiff from '../_components/LatexDiff';
 import ScoreRing from '../_components/ScoreRing';
 import PdfPreview from './_components/PdfPreview';
 import SourcePicker, { type ResumeSource } from './_components/SourcePicker';
-
-const API = 'http://localhost:8000';
+import { API } from '@/lib/api';
 
 interface LatexChange {
   original: string;

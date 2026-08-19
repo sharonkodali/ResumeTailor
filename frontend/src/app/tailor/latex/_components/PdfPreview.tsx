@@ -3,8 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Download, FileText, Loader2, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-const API = 'http://localhost:8000';
+import { API } from '@/lib/api';
 
 interface CompilerStatus {
   available: boolean;

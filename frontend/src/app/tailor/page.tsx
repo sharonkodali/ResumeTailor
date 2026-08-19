@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import ScoreRing from './_components/ScoreRing';
+import { API } from '@/lib/api';
 
 interface TailoredBullet {
   original_text: string;
@@ -44,7 +45,7 @@ export default function TailorPage() {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:8000/api/tailor', {
+      const res = await fetch(`${API}/api/tailor`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ job_description: jobDescription }),

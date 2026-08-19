@@ -5,7 +5,7 @@ import Reveal from "./_components/Reveal";
 import StepCard from "./_components/StepCard";
 
 // Kept static: the counts a dashboard would show live in the backend, and
-// fetching localhost:8000 at build time would break `next build`.
+// fetching the backend at build time would break `next build`.
 const DESTINATIONS = [
   {
     href: "/vault",

@@ -6,6 +6,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { ExperienceCard } from '@/components/ExperienceCard';
 import ConfirmDialog from '../_components/ConfirmDialog';
 import ResumeUpload from './_components/ResumeUpload';
+import { API } from '@/lib/api';
 
 interface BulletPoint {
   id?: number;
@@ -47,7 +48,7 @@ export default function VaultPage() {
   // Promise callbacks rather than await: state must not be set synchronously
   // inside the mount effect below (react-hooks/set-state-in-effect).
   const fetchExperiences = () =>
-    fetch('http://localhost:8000/api/experiences')
+    fetch(`${API}/api/experiences`)
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
       .then((data: Experience[]) => setExperiences(data))
       .catch((err) => console.error('Failed to load experiences:', err))
@@ -146,7 +147,7 @@ export default function VaultPage() {
     if (!exp || exp.id === undefined) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/api/experiences/${exp.id}`, {
+      const res = await fetch(`${API}/api/experiences/${exp.id}`, {
         method: 'DELETE',
       });
 
@@ -175,8 +176,8 @@ export default function VaultPage() {
     };
 
     const url = editingId
-      ? `http://localhost:8000/api/experiences/${editingId}`
-      : 'http://localhost:8000/api/experiences';
+      ? `${API}/api/experiences/${editingId}`
+      : `${API}/api/experiences`;
 
     try {
       const res = await fetch(url, {
