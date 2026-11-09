@@ -5,6 +5,8 @@ data layer: a structured career-history "Vault," and a LaTeX-aware tailoring
 engine that rewrites resume bullets in place without touching document
 structure.
 
+**[Live demo](https://resume-tailor-seven-zeta.vercel.app)**
+
 ## What it does
 
 1. **The Vault** — a structured store of your career history (experiences,
@@ -22,7 +24,7 @@ structure.
 ## Why offset-splicing instead of full-document generation
 
 Asking a model to emit an entire .tex file produces documents that don't
-compile and diffs no one can review. [latex_tailor.py](link) never lets the
+compile and diffs no one can review. [`latex_tailor.py`](backend/services/latex_tailor.py) never lets the
 model touch document structure — it only ever rewrites bullet text at known
 offsets, so the output is guaranteed to still compile.
 
@@ -38,11 +40,27 @@ offsets, so the output is guaranteed to still compile.
 
 ## Setup
 
-[Your actual setup steps — clone, install frontend deps, install backend
-deps, set env vars per .env.local.example, run migrations if any, start
-both servers]
+**Backend** (Python 3.10+, run from inside `backend/`):
 
-## Screenshots
+```bash
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env              # add your OPENAI_API_KEY
+uvicorn main:app --reload         # http://localhost:8000, docs at /docs
+```
 
-[Add 2-3 screenshots of the Vault, the tailoring diff view, and the PDF
-preview — this alone makes the repo dramatically more credible at a glance]
+Optional: `brew install tectonic` to enable live PDF preview.
+
+**Frontend:**
+
+```bash
+cd frontend
+npm install
+cp .env.local.example .env.local  # points at http://localhost:8000
+npm run dev                       # http://localhost:3000
+```
+
+**Tests:** `cd backend && python -m pytest`
+
+See [backend/README.md](backend/README.md) for API details and setup quirks.
