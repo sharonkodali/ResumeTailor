@@ -1,5 +1,7 @@
 # ResumeTailor
 
+[![ci](https://github.com/sharonkodali/ResumeTailor/actions/workflows/ci.yml/badge.svg)](https://github.com/sharonkodali/ResumeTailor/actions/workflows/ci.yml)
+
 An AI-powered resume tailoring tool with two workflows built on a shared
 data layer: a structured career-history "Vault," and a LaTeX-aware tailoring
 engine that rewrites resume bullets in place without touching document
